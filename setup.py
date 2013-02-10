@@ -111,10 +111,10 @@ with open("CHANGES.txt") as f:
     long_description.append(f.read())
 
 setup(
-    name="defusedxml",
+    name="defusedexpat",
     version="0.1",
     ext_modules=exts,
-    py_modules=[],
+    py_modules=["defuxedexpat"],
     cmdclass={"test": TestCommand},
     author="Christian Heimes",
     author_email="christian@python.org",

@@ -2,10 +2,11 @@ from __future__ import print_function
 import os
 import sys
 import unittest
-import hashlib
 
+import defusedexpat
 import pyexpat
 import _elementtree
+
 
 def test_main():
     suite = unittest.TestSuite()
