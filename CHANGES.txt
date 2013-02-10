@@ -1,0 +1,8 @@
+Changelog
+=========
+
+defusedexpat 0.1
+----------------
+
+*Release date: ??-Feb-2013*
+
