@@ -3197,10 +3197,66 @@ xmlparser_init(PyObject *self, PyObject *args, PyObject *kwds)
     XMLParserObject *self_xp = (XMLParserObject *)self;
     PyObject *target = NULL, *html = NULL;
     char *encoding = NULL;
-    static char *kwlist[] = {"html", "target", "encoding", 0};
+    int ignore_dtd_flag = 0;
+    PyObject *ignore_dtd = NULL, *indirections = NULL, *expansions = NULL;
+    unsigned long max_indirections;
+    unsigned long max_expansions;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOz:XMLParser", kwlist,
-                                     &html, &target, &encoding)) {
+    static char *kwlist[] = {"html", "target", "encoding",
+                              "max_entity_indirections",
+                              "max_entity_expansions", "ignore_dtd", 0};
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOzOOO:XMLParser", kwlist,
+                                     &html, &target, &encoding,
+                                     &indirections, &expansions,
+                                     &ignore_dtd)) {
+        return -1;
+    }
+
+    if (indirections == NULL || indirections == Py_None) {
+#ifdef XML_BOMB_PROTECTION
+        max_indirections = XML_DEFAULT_MAX_ENTITY_INDIRECTIONS;
+#else
+        max_indirections = 0;
+#endif
+    }
+    else {
+        max_indirections = PyLong_AsUnsignedLong(indirections);
+        if ((max_indirections == (unsigned long)-1) && PyErr_Occurred()) {
+            return -1;
+        }
+        if (max_indirections > UINT_MAX) {
+            PyErr_Format(PyExc_ValueError,
+                         "max_entity_indirections must not be greater than %i",
+                         UINT_MAX);
+            return -1;
+        }
+    }
+
+    if (expansions == NULL || expansions == Py_None) {
+#ifdef XML_BOMB_PROTECTION
+        max_expansions = XML_DEFAULT_MAX_ENTITY_EXPANSIONS;
+#else
+        max_expansions = 0;
+#endif
+    }
+    else {
+        max_expansions = PyLong_AsUnsignedLong(expansions);
+        if ((max_expansions == (unsigned long)-1) && PyErr_Occurred()) {
+            return -1;
+        }
+        if (max_expansions > UINT_MAX) {
+            PyErr_Format(PyExc_ValueError,
+                         "max_entity_expansions must not be greater than %i",
+                         UINT_MAX);
+            return -1;
+        }
+    }
+
+    if (ignore_dtd == NULL) {
+        ignore_dtd_flag = 0;
+    }
+    else if ((ignore_dtd_flag = PyObject_IsTrue(ignore_dtd)) == -1) {
         return -1;
     }
 
@@ -3222,6 +3278,18 @@ xmlparser_init(PyObject *self, PyObject *args, PyObject *kwds)
         return -1;
     }
 
+#ifdef XML_BOMB_PROTECTION
+    EXPAT(SetMaxEntityIndirections)(self_xp->parser, (unsigned int)max_indirections);
+    assert(EXPAT(GetMaxEntityIndirections)(self_xp->parser) ==
+               (unsigned int)max_indirections);
+    EXPAT(SetMaxEntityExpansions)(self_xp->parser,
+                                 (unsigned int)max_expansions);
+    assert(EXPAT(GetMaxEntityExpansions)(self_xp->parser) ==
+           (unsigned int)max_expansions);
+    EXPAT(SetResetDTDFlag)(self_xp->parser,
+                           ignore_dtd_flag ? XML_TRUE : XML_FALSE);
+#endif
+
     if (target) {
         Py_INCREF(target);
     } else {
@@ -3241,7 +3309,9 @@ xmlparser_init(PyObject *self, PyObject *args, PyObject *kwds)
     self_xp->handle_comment = PyObject_GetAttrString(target, "comment");
     self_xp->handle_pi = PyObject_GetAttrString(target, "pi");
     self_xp->handle_close = PyObject_GetAttrString(target, "close");
-    self_xp->handle_doctype = PyObject_GetAttrString(target, "doctype");
+    if (!ignore_dtd_flag) {
+        self_xp->handle_doctype = PyObject_GetAttrString(target, "doctype");
+    }
 
     PyErr_Clear();
 
@@ -3270,10 +3340,12 @@ xmlparser_init(PyObject *self, PyObject *args, PyObject *kwds)
             self_xp->parser,
             (XML_ProcessingInstructionHandler) expat_pi_handler
             );
-    EXPAT(SetStartDoctypeDeclHandler)(
-        self_xp->parser,
-        (XML_StartDoctypeDeclHandler) expat_start_doctype_handler
-        );
+    if (!ignore_dtd_flag) {
+        EXPAT(SetStartDoctypeDeclHandler)(
+            self_xp->parser,
+            (XML_StartDoctypeDeclHandler) expat_start_doctype_handler
+            );
+    }
     EXPAT(SetUnknownEncodingHandler)(
         self_xp->parser,
         (XML_UnknownEncodingHandler) expat_unknown_encoding_handler, NULL
@@ -3590,6 +3662,20 @@ xmlparser_getattro(XMLParserObject* self, PyObject* nameobj)
                 "Expat %d.%d.%d", XML_MAJOR_VERSION,
                 XML_MINOR_VERSION, XML_MICRO_VERSION);
         }
+#ifdef XML_BOMB_PROTECTION
+        else if (PyUnicode_CompareWithASCIIString(nameobj, "ignore_dtd") == 0) {
+             return PyBool_FromLong(EXPAT(GetResetDTDFlag)
+                                    (self->parser));
+        }
+        else if (PyUnicode_CompareWithASCIIString(nameobj, "max_entity_indirections") == 0) {
+             return PyLong_FromUnsignedLong(EXPAT(GetMaxEntityIndirections)
+                                            (self->parser));
+        }
+        else if (PyUnicode_CompareWithASCIIString(nameobj, "max_entity_expansions") == 0) {
+             return PyLong_FromUnsignedLong(EXPAT(GetMaxEntityExpansions)
+                                            (self->parser));
+        }
+#endif
         else
             goto generic;
 

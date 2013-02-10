@@ -3,7 +3,11 @@
 
 /* note: you must import expat.h before importing this module! */
 
+#ifdef XML_BOMB_PROTECTION
+#define PyExpat_CAPI_MAGIC  "pyexpat.expat_CAPI 1.1 bomb protection"
+#else
 #define PyExpat_CAPI_MAGIC  "pyexpat.expat_CAPI 1.0"
+#endif
 #define PyExpat_CAPSULE_NAME "pyexpat.expat_CAPI"
 
 struct PyExpat_CAPI 
@@ -45,6 +49,18 @@ struct PyExpat_CAPI
     void (*SetUserData)(XML_Parser parser, void *userData);
     void (*SetStartDoctypeDeclHandler)(XML_Parser parser,
                                        XML_StartDoctypeDeclHandler start);
+#ifdef XML_BOMB_PROTECTION
+    /* CAPI 1.1 bomb protection additions */
+    unsigned int (*GetMaxEntityIndirections)(XML_Parser parser);
+    void (*SetMaxEntityIndirections)(XML_Parser parser, unsigned int value);
+
+    unsigned int (*GetEntityExpansions)(XML_Parser parser);
+    unsigned int (*GetMaxEntityExpansions)(XML_Parser parser);
+    void (*SetMaxEntityExpansions)(XML_Parser parser, unsigned int value);
+
+    XML_Bool (*GetResetDTDFlag)(XML_Parser parser);
+    void (*SetResetDTDFlag)(XML_Parser parser, XML_Bool value);
+#endif
     /* always add new stuff to the end! */
 };
 

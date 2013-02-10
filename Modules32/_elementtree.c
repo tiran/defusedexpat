@@ -2443,10 +2443,69 @@ xmlparser(PyObject* self_, PyObject* args, PyObject* kw)
 
     PyObject* target = NULL;
     char* encoding = NULL;
-    static char* kwlist[] = { "target", "encoding", NULL };
-    if (!PyArg_ParseTupleAndKeywords(args, kw, "|Oz:XMLParser", kwlist,
-                                     &target, &encoding))
+    int ignore_dtd_flag = 0;
+    PyObject *ignore_dtd = NULL, *indirections = NULL, *expansions = NULL;
+    unsigned long max_indirections;
+    unsigned long max_expansions;
+
+    static char *kwlist[] = {"target", "encoding",
+                              "max_entity_indirections",
+                              "max_entity_expansions", "ignore_dtd", 0};
+
+    if (!PyArg_ParseTupleAndKeywords(args, kw, "|OzOOO:XMLParser", kwlist,
+                                     &target, &encoding,
+                                     &indirections, &expansions,
+                                     &ignore_dtd)) {
         return NULL;
+    }
+
+    if (indirections == NULL || indirections == Py_None) {
+#ifdef XML_BOMB_PROTECTION
+        max_indirections = XML_DEFAULT_MAX_ENTITY_INDIRECTIONS;
+#else
+        max_indirections = 0;
+#endif
+    }
+    else {
+        max_indirections = PyLong_AsUnsignedLong(indirections);
+        if ((max_indirections == (unsigned long)-1) && PyErr_Occurred()) {
+            return NULL;
+        }
+        if (max_indirections > UINT_MAX) {
+            PyErr_Format(PyExc_ValueError,
+                         "max_entity_indirections must not be greater than %i",
+                         UINT_MAX);
+            return NULL;
+        }
+    }
+
+    if (expansions == NULL || expansions == Py_None) {
+#ifdef XML_BOMB_PROTECTION
+        max_expansions = XML_DEFAULT_MAX_ENTITY_EXPANSIONS;
+#else
+        max_expansions = 0;
+#endif
+    }
+    else {
+        max_expansions = PyLong_AsUnsignedLong(expansions);
+        if ((max_expansions == (unsigned long)-1) && PyErr_Occurred()) {
+            return NULL;
+        }
+        if (max_expansions > UINT_MAX) {
+            PyErr_Format(PyExc_ValueError,
+                         "max_entity_expansions must not be greater than %i",
+                         UINT_MAX);
+            return NULL;
+        }
+    }
+
+    if (ignore_dtd == NULL) {
+        ignore_dtd_flag = 0;
+    }
+    else if ((ignore_dtd_flag = PyObject_IsTrue(ignore_dtd)) == -1) {
+             return NULL;
+    }
+
 
 #if defined(USE_PYEXPAT_CAPI)
     if (!expat_capi) {
@@ -2466,7 +2525,7 @@ xmlparser(PyObject* self_, PyObject* args, PyObject* kw)
         PyObject_Del(self);
         return NULL;
     }
-     
+
     self->names = PyDict_New();
     if (!self->names) {
         PyObject_Del(self->entity);
@@ -2486,6 +2545,18 @@ xmlparser(PyObject* self_, PyObject* args, PyObject* kw)
         PyErr_NoMemory();
         return NULL;
     }
+
+#ifdef XML_BOMB_PROTECTION
+    EXPAT(SetMaxEntityIndirections)(self->parser, (unsigned int)max_indirections);
+    assert(EXPAT(GetMaxEntityIndirections)(self->parser) ==
+               (unsigned int)max_indirections);
+    EXPAT(SetMaxEntityExpansions)(self->parser,
+                                 (unsigned int)max_expansions);
+    assert(EXPAT(GetMaxEntityExpansions)(self->parser) ==
+           (unsigned int)max_expansions);
+    EXPAT(SetResetDTDFlag)(self->parser,
+                           ignore_dtd_flag ? XML_TRUE : XML_FALSE);
+#endif
 
     /* setup target handlers */
     if (!target) {
@@ -2810,6 +2881,20 @@ xmlparser_getattro(XMLParserObject* self, PyObject* nameobj)
                 "Expat %d.%d.%d", XML_MAJOR_VERSION,
                 XML_MINOR_VERSION, XML_MICRO_VERSION);
         }
+#ifdef XML_BOMB_PROTECTION
+        else if (PyUnicode_CompareWithASCIIString(nameobj, "ignore_dtd") == 0) {
+             return PyBool_FromLong(EXPAT(GetResetDTDFlag)
+                                    (self->parser));
+        }
+        else if (PyUnicode_CompareWithASCIIString(nameobj, "max_entity_indirections") == 0) {
+             return PyLong_FromUnsignedLong(EXPAT(GetMaxEntityIndirections)
+                                            (self->parser));
+        }
+        else if (PyUnicode_CompareWithASCIIString(nameobj, "max_entity_expansions") == 0) {
+             return PyLong_FromUnsignedLong(EXPAT(GetMaxEntityExpansions)
+                                            (self->parser));
+        }
+#endif
         else
             goto generic;
 
