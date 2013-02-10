@@ -2,7 +2,7 @@ PYTHON=python
 SETUPFLAGS=
 COMPILEFLAGS=
 INSTALLFLAGS=
-PYTHONS=python2.6 python2.7 python3.2 python3.3 python3.4
+PYTHONS=python2.6 python2.7 python3.2 python3.3
 
 .PHONY: inplace all rebuild test_inplace test fulltests clean distclean
 .PHONY: sdist install
@@ -24,9 +24,11 @@ test_inplace: inplace
 test: test_inplace
 
 fulltest:
+	$(MAKE) clean
 	@set -e; \
 	for python in $(PYTHONS); do \
-		$$python $(SETUPFLAGS) setup.py -q test; \
+		echo "\n*** $$python ***"; \
+		$$python $(SETUPFLAGS) setup.py test; \
 	done
 	$(MAKE) clean
 

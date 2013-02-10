@@ -4,11 +4,12 @@ import sys
 import unittest
 import hashlib
 
-
+import pyexpat
+import _elementtree
 
 def test_main():
     suite = unittest.TestSuite()
-    suite.addTests(unittest.makeSuite(cls))
+    #suite.addTests(unittest.makeSuite(cls))
     return suite
 
 if __name__ == "__main__":
