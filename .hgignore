@@ -9,7 +9,10 @@
 ^.settings
 
 syntax: glob
-_sha3*.so*
+pyexpat*.so*
+pyexpat*.pyd*
+_elementtree*.so*
+_elementtree*.pyd*
 *.swp
 *.o
 *.pyc
