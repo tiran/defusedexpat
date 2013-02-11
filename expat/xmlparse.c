@@ -139,6 +139,11 @@ typedef struct binding {
   int uriAlloc;
 } BINDING;
 
+/* Python only: workaround for PREFIX macro in PC/pyconfig.h */
+#ifdef PREFIX
+#undef PREFIX
+#endif
+
 typedef struct prefix {
   const XML_Char *name;
   BINDING *binding;
