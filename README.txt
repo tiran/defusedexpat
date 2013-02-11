@@ -33,6 +33,7 @@ Requirements
 
 * Python 2.6.6 or newer (2.6.8 for randomized hashing)
 * Python 2.7.3 or newer
+* Python 3.1.5 or newer
 * Python 3.2.3 or newer
 * Python 3.3.0 or newer
 

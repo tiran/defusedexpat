@@ -128,7 +128,7 @@ with open("CHANGES.txt") as f:
 
 setup(
     name="defusedexpat",
-    version="0.1",
+    version="0.2dev",
     ext_modules=exts,
     py_modules=["defusedexpat"],
     cmdclass={"test": TestCommand},
@@ -155,6 +155,7 @@ setup(
         "Programming Language :: Python :: 2.6",
         "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.1",
         "Programming Language :: Python :: 3.2",
         "Programming Language :: Python :: 3.3",
         # "Programming Language :: Python :: 3.4",
