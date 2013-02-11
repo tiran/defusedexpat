@@ -13,6 +13,10 @@ import imp
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 
+if "xml" in sys.modules:
+    raise ImportError("'xml' package is already loaded.'defusedexpat' must "
+                      "be loaded first.")
+
 def _load_module(modname):
     """Load the module from current directory
 
@@ -20,7 +24,7 @@ def _load_module(modname):
     overwrites the module.
     """
     if modname in sys.modules:
-        raise ValueError("%s already loaded" % modname)
+        raise ImportError("Stock module %r already loaded" % modname)
     searchpath = [HERE]
     if "DEFUSED_EXPAT" in os.environ:
         # for unit testing
