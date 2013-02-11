@@ -62,7 +62,7 @@ class TestCommand(Command):
 
 moddir = "Modules%i%i" % sys.version_info[0:2]
 exts = []
-expat_inc = [os.path.join(os.getcwd(), 'Modules', 'expat')]
+expat_inc = [os.path.join(os.getcwd(), 'expat')]
 define_macros = [
     ('HAVE_EXPAT_CONFIG_H', '1'),
 ]
