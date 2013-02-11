@@ -55,10 +55,11 @@ class TestCommand(Command):
         libdirs = self.get_lib_dirs()
         # add lib dirs to Python's search path
         env = os.environ.copy()
-        env["PYTHONPATH"] = os.pathsep.join(libdirs)
+        env["PYTHONPATH"] = env["DEFUSED_EXPAT"] = os.pathsep.join(libdirs)
         # and finally run the test command
         errno = subprocess.check_call([sys.executable, "tests.py"], env=env)
         raise SystemExit(errno)
+
 
 moddir = "Modules%i%i" % sys.version_info[0:2]
 exts = []
@@ -114,7 +115,7 @@ setup(
     name="defusedexpat",
     version="0.1",
     ext_modules=exts,
-    py_modules=["defuxedexpat"],
+    py_modules=["defusedexpat"],
     cmdclass={"test": TestCommand},
     author="Christian Heimes",
     author_email="christian@python.org",

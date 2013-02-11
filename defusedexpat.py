@@ -21,11 +21,17 @@ def _load_module(modname):
     """
     if modname in sys.modules:
         raise ValueError("%s already loaded" % modname)
+    searchpath = [HERE]
+    if "DEFUSED_EXPAT" in os.environ:
+        # for unit testing
+        searchpath.extend(os.environ["DEFUSED_EXPAT"].split(os.pathsep))
+    fh = None
     try:
-        fh, filename, description = imp.find_module(modname, [HERE])
+        fh, filename, description = imp.find_module(modname, searchpath)
         mod = imp.load_module(modname, fh, filename, description)
     finally:
-        fh.close()
+        if fh is not None:
+            fh.close()
     modpath = getattr(sys.modules[modname], "__file__", "")
     if not modpath.startswith(HERE):
         raise ValueError("Unpatched module %r loaded (%s != %s)" %
