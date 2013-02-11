@@ -70,6 +70,18 @@ define_macros = [
     #('XML_DEFAULT_MAX_ENTITY_EXPANSIONS', str(8*1024*1024)),
     #('XML_DTD_RESET_FLAG_DEFAULT', '0'),
 ]
+if sys.platform == "win32":
+    define_macros.extend([
+        ("PYEXPAT_EXPORTS", "1"),
+        ("HAVE_EXPAT_H", "1"),
+        ("XML_NS", "1"),
+        ("XML_DTD", "1"),
+        ("BYTEORDER", "1234"),
+        ("XML_CONTEXT_BYTES", "1024"),
+        ("XML_STATIC", "1"),
+        ("HAVE_MEMMOVE", "1"),
+    ])
+
 expat_lib = []
 expat_sources = ['expat/xmlparse.c',
                  'expat/xmlrole.c',
