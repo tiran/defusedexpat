@@ -24,13 +24,11 @@ test_inplace: inplace
 test: test_inplace
 
 fulltest:
-	$(MAKE) clean
 	@set -e; \
 	for python in $(PYTHONS); do \
 		echo "\n*** $$python ***"; \
 		$$python $(SETUPFLAGS) setup.py test; \
 	done
-	$(MAKE) clean
 
 clean:
 	@find . \( -name '*.o' -or -name '*.so' -or -name '*.sl' -or \
