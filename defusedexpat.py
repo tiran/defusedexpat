@@ -54,8 +54,8 @@ def monkey_patch():
         _ExpatParser_orig__init__ = ExpatParser.__init__
 
     ExpatParser.__int__ = _ExpatParser_patched__init__
-    DomOptions.external_dtd_subset = False
-    DomOptions.external_general_entities = False
-    DomOptions.external_parameter_entities = False
+    Options.external_dtd_subset = False
+    Options.external_general_entities = False
+    Options.external_parameter_entities = False
 
 monkey_patch()
