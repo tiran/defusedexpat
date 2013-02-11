@@ -1,3 +1,9 @@
+# defusedexpat
+#
+# Copyright (c) 2013 by Christian Heimes <christian@python.org>
+# Licensed to PSF under a Contributor Agreement.
+# See http://www.python.org/psf/license for licensing details.
+
 from __future__ import print_function
 import os
 import sys
@@ -9,7 +15,7 @@ import defusedexpat
 import pyexpat
 import _elementtree
 
-# after defuxedexpat
+# after defusedexpat
 from xml.parsers import expat
 from xml.parsers.expat import errors
 from xml.etree import cElementTree as ET
@@ -23,16 +29,16 @@ PY3 = sys.version_info[0] > 2
 PY26 = sys.version_info[:2] == (2, 6)
 PY31 = sys.version_info[:2] == (3, 1)
 
-
-# Python 2.6
-ParseError = getattr(ET, "ParseError", SyntaxError)
+if PY26 or PY31:
+    ParseError = SyntaxError
+else:
+    ParseError = ET.ParseError
 
 # prevent web access
 # based on Debian's rules, Port 9 is discard
 os.environ["http_proxy"] = "http://127.0.9.1:9"
 os.environ["https_proxy"] = os.environ["http_proxy"]
 os.environ["ftp_proxy"] = os.environ["http_proxy"]
-
 
 quadratic_bomb = b"""\
 <!DOCTYPE bomb [
@@ -43,10 +49,9 @@ quadratic_bomb = b"""\
 <bomb>&a;</bomb>
 """
 
+
 if PY26 or PY31:
     class _AssertRaisesContext(object):
-        """A context manager used to implement TestCase.assertRaises* methods."""
-
         def __init__(self, expected, test_case, expected_regexp=None):
             self.expected = expected
             self.failureException = test_case.failureException
@@ -88,6 +93,7 @@ class DefusedExpatTests(unittest.TestCase):
     xml_bomb = os.path.join(HERE, "xmltestdata", "xmlbomb.xml")
 
     if PY26 or PY31:
+        # old Python versions don't have these useful test methods
         def assertRaises(self, excClass, callableObj=None, *args, **kwargs):
             context = _AssertRaisesContext(excClass, self)
             if callableObj is None:
@@ -96,7 +102,6 @@ class DefusedExpatTests(unittest.TestCase):
                 callableObj(*args, **kwargs)
 
         def assertIn(self, member, container, msg=None):
-            """Just like self.assertTrue(a in b), but with a nicer default message."""
             if member not in container:
                 standardMsg = '%s not found in %s' % (repr(member),
                                                       repr(container))
@@ -115,7 +120,9 @@ class DefusedExpatTests(unittest.TestCase):
         with self.assertRaises(expat.ExpatError) as e:
             with open(self.xml_bomb, "rb") as f:
                 p.ParseFile(f)
-        self.assertEqual(str(e.exception), "entity indirection limit exceeded: line 7, column 6")
+        self.assertEqual(str(e.exception),
+                         "entity indirection limit exceeded: "
+                         "line 7, column 6")
 
         p = expat.ParserCreate()
         p.max_entity_indirections = 0
@@ -138,7 +145,9 @@ class DefusedExpatTests(unittest.TestCase):
         xml = quadratic_bomb.replace(b"MARK", b"a" * 1025)
         with self.assertRaises(expat.ExpatError) as e:
             p.Parse(xml)
-        self.assertEqual(str(e.exception), "document's entity expansion limit exceeded: line 6, column 6")
+        self.assertEqual(str(e.exception),
+                         "document's entity expansion limit exceeded: "
+                         "line 6, column 6")
 
         # but passes with an entity of 1024 chars
         xml = quadratic_bomb.replace(b"MARK", b"a" * 1024)
@@ -153,7 +162,9 @@ class DefusedExpatTests(unittest.TestCase):
         p.max_entity_expansions = 1024
         with self.assertRaises(expat.ExpatError) as e:
             p.Parse(xml)
-        self.assertEqual(str(e.exception), "document's entity expansion limit exceeded: line 6, column 6")
+        self.assertEqual(str(e.exception),
+                         "document's entity expansion limit exceeded: "
+                         "line 6, column 6")
 
         p = expat.ParserCreate()
         p.max_entity_expansions = 1030 # 2 * x512 + 6
@@ -165,7 +176,9 @@ class DefusedExpatTests(unittest.TestCase):
         p = expat.ParserCreate()
         with self.assertRaises(expat.ExpatError) as e:
             p.Parse(xml)
-        self.assertEqual(str(e.exception), "document's entity expansion limit exceeded: line 6, column 6")
+        self.assertEqual(str(e.exception),
+                         "document's entity expansion limit exceeded: "
+                         "line 6, column 6")
 
         # disabled limit
         p = expat.ParserCreate()
@@ -232,7 +245,7 @@ class DefusedExpatTests(unittest.TestCase):
             # pulldom does DTD retrieval
             dom = pulldom.parse(self.xml_dtd)
             self.assertRaises(IOError, list, dom)
-            # and loads external entites by default
+            # and loads external entities by default
             dom = pulldom.parse(self.xml_external)
             self.assertRaises(IOError, list, dom)
         finally:
@@ -251,11 +264,10 @@ class DefusedExpatTests(unittest.TestCase):
             defusedexpat.unmonkey_patch()
             # minidom does NOT retrieve DTDs
             dom = minidom.parse(self.xml_dtd)
-            # and does NOT load  external entites by default
+            # and does NOT load  external entities by default
             minidom.parse(self.xml_external)
         finally:
             defusedexpat.monkey_patch()
-
 
 
 def test_main():
