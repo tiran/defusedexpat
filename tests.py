@@ -3,6 +3,7 @@ import os
 import sys
 import unittest
 import re
+import io
 
 import defusedexpat
 import pyexpat
@@ -12,8 +13,13 @@ import _elementtree
 from xml.parsers import expat
 from xml.parsers.expat import errors
 from xml.etree import cElementTree as ET
+from xml.sax.saxutils import XMLGenerator
+from xml import sax
+from xml.dom import pulldom
+from xml.dom import minidom
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+PY3 = sys.version_info[0] > 2
 PY26 = sys.version_info[:2] == (2, 6)
 
 
@@ -87,6 +93,12 @@ class DefusedExpatTests(unittest.TestCase):
                 return context
             with context:
                 callableObj(*args, **kwargs)
+        def assertIn(self, member, container, msg=None):
+            """Just like self.assertTrue(a in b), but with a nicer default message."""
+            if member not in container:
+                standardMsg = '%s not found in %s' % (repr(member),
+                                                      repr(container))
+                self.fail(self._formatMessage(msg, standardMsg))
 
 
     def test_xmlbomb_protection_available(self):
@@ -168,7 +180,16 @@ class DefusedExpatTests(unittest.TestCase):
                 p.ParseFile(f)
         self.assertEqual(str(e.exception), "undefined entity: line 7, column 6")
 
-    def test_etree(self):
+    def test_xmlbomb_cetree(self):
+        # ElementTree does NOT retrieve DTD
+        ET.parse(self.xml_dtd)
+
+        # and raises an exception because it doesn't expand external entities
+        with self.assertRaises(ParseError) as e:
+            ET.parse(self.xml_external)
+        self.assertEqual(str(e.exception),
+            "undefined entity &ee;: line 4, column 6")
+
         with self.assertRaises(ParseError) as e:
             ET.parse(self.xml_bomb)
         self.assertEqual(str(e.exception),
@@ -178,6 +199,55 @@ class DefusedExpatTests(unittest.TestCase):
         with self.assertRaises(ParseError) as e:
             xml = quadratic_bomb.replace(b"MARK", b"a" * (eight_mb + 1))
             ET.fromstring(xml)
+
+    def parse_sax(self, xmlfile, **kwargs):
+        if PY3:
+            result = io.StringIO()
+        else:
+            result = io.BytesIO()
+        handler = XMLGenerator(result)
+        sax.parse(xmlfile, handler, **kwargs)
+        return result.getvalue()
+
+    def test_sax_external_entity(self):
+        try:
+            defusedexpat.unmonkey_patch()
+            # IOError caused by proxy settings
+            self.assertRaises(IOError, self.parse_sax, self.xml_external)
+        finally:
+            defusedexpat.monkey_patch()
+        value = self.parse_sax(self.xml_external)
+        self.assertIn("<root></root>", value)
+
+    def test_pulldom_externals(self):
+        try:
+            defusedexpat.unmonkey_patch()
+            # pulldom does DTD retrieval
+            dom = pulldom.parse(self.xml_dtd)
+            self.assertRaises(IOError, list, dom)
+            # and loads external entites by default
+            dom = pulldom.parse(self.xml_external)
+            self.assertRaises(IOError, list, dom)
+        finally:
+            defusedexpat.monkey_patch()
+
+        events = list(pulldom.parse(self.xml_dtd))
+        self.assertEqual(events[9][0], 'CHARACTERS')
+        self.assertEqual(events[9][1].data, "text")
+
+        events = list(pulldom.parse(self.xml_external))
+        self.assertEqual([e[0] for e in events],
+                         ['START_DOCUMENT', 'START_ELEMENT', 'END_ELEMENT'])
+
+    def test_minidom_externals(self):
+        try:
+            defusedexpat.unmonkey_patch()
+            # minidom does NOT retrieve DTDs
+            dom = minidom.parse(self.xml_dtd)
+            # and does NOT load  external entites by default
+            minidom.parse(self.xml_external)
+        finally:
+            defusedexpat.monkey_patch()
 
 
 
