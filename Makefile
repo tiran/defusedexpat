@@ -21,7 +21,8 @@ rebuild: clean all
 test_inplace: inplace
 	$(PYTHON) -m tests
 
-test: test_inplace
+test:
+	$(PYTHON) $(SETUPFLAGS) setup.py test
 
 fulltest:
 	@set -e; \
