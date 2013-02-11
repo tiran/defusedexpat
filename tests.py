@@ -21,6 +21,7 @@ from xml.dom import minidom
 HERE = os.path.dirname(os.path.abspath(__file__))
 PY3 = sys.version_info[0] > 2
 PY26 = sys.version_info[:2] == (2, 6)
+PY31 = sys.version_info[:2] == (3, 1)
 
 
 # Python 2.6
@@ -42,7 +43,7 @@ quadratic_bomb = b"""\
 <bomb>&a;</bomb>
 """
 
-if PY26:
+if PY26 or PY31:
     class _AssertRaisesContext(object):
         """A context manager used to implement TestCase.assertRaises* methods."""
 
@@ -86,13 +87,14 @@ class DefusedExpatTests(unittest.TestCase):
     xml_quadratic = os.path.join(HERE, "xmltestdata", "quadratic.xml")
     xml_bomb = os.path.join(HERE, "xmltestdata", "xmlbomb.xml")
 
-    if PY26:
+    if PY26 or PY31:
         def assertRaises(self, excClass, callableObj=None, *args, **kwargs):
             context = _AssertRaisesContext(excClass, self)
             if callableObj is None:
                 return context
             with context:
                 callableObj(*args, **kwargs)
+
         def assertIn(self, member, container, msg=None):
             """Just like self.assertTrue(a in b), but with a nicer default message."""
             if member not in container:
@@ -187,8 +189,13 @@ class DefusedExpatTests(unittest.TestCase):
         # and raises an exception because it doesn't expand external entities
         with self.assertRaises(ParseError) as e:
             ET.parse(self.xml_external)
-        self.assertEqual(str(e.exception),
-            "undefined entity &ee;: line 4, column 6")
+        if PY31:
+            # Python 3.1 bug
+            self.assertTrue(str(e.exception).startswith("undefined entity"),
+                            str(e.exception))
+        else:
+            self.assertEqual(str(e.exception),
+                "undefined entity &ee;: line 4, column 6")
 
         with self.assertRaises(ParseError) as e:
             ET.parse(self.xml_bomb)

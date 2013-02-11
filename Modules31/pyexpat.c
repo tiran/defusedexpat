@@ -1386,6 +1386,16 @@ xmlparse_getattro(xmlparseobject *self, PyObject *nameobj)
         if (strcmp(name, "buffer_used") == 0)
             return PyLong_FromLong((long) self->buffer_used);
     }
+#ifdef XML_BOMB_PROTECTION
+    if (name[0] == 'm') {
+        if (strcmp(name, "max_entity_indirections") == 0)
+            return PyLong_FromLong((long)
+                                    XML_GetMaxEntityIndirections(self->itself));
+        if (strcmp(name, "max_entity_expansions") == 0)
+            return PyLong_FromLong((long)
+                                    XML_GetMaxEntityExpansions(self->itself));
+    }
+#endif
     if (strcmp(name, "namespace_prefixes") == 0)
         return get_pybool(self->ns_prefixes);
     if (strcmp(name, "ordered_attributes") == 0)
@@ -1402,7 +1412,16 @@ xmlparse_getattro(xmlparseobject *self, PyObject *nameobj)
             return self->intern;
         }
     }
-
+#ifdef XML_BOMB_PROTECTION
+    if (strcmp(name, "reset_dtd") == 0) {
+        if (XML_GetResetDTDFlag(self->itself) == XML_TRUE) {
+            Py_RETURN_TRUE;
+        }
+        else {
+            Py_RETURN_FALSE;
+        }
+    }
+#endif
     return PyObject_GenericGetAttr((PyObject*)self, nameobj);
 }
 
@@ -1438,6 +1457,9 @@ xmlparse_dir(PyObject *self, PyObject* noargs)
     APPEND(rc, "buffer_text");
     APPEND(rc, "buffer_used");
     APPEND(rc, "namespace_prefixes");
+    APPEND(rc, "max_entity_expansions");
+    APPEND(rc, "max_entity_indirections");
+    APPEND(rc, "reset_dtd");
     APPEND(rc, "ordered_attributes");
     APPEND(rc, "specified_attributes");
     APPEND(rc, "intern");
@@ -1580,6 +1602,51 @@ xmlparse_setattr(xmlparseobject *self, char *name, PyObject *v)
       self->buffer_size = new_buffer_size;
       return 0;
     }
+#ifdef XML_BOMB_PROTECTION
+    if (strcmp(name, "max_entity_expansions") == 0) {
+        unsigned long value;
+
+        value = PyLong_AsUnsignedLong(v);
+        if ((value == (unsigned long)-1) && PyErr_Occurred()) {
+            return -1;
+        }
+        if (value > UINT_MAX) {
+            PyErr_Format(PyExc_ValueError,
+                         "max_entity_expansions must not be greater than %i",
+                         UINT_MAX);
+            return -1;
+        }
+        XML_SetMaxEntityExpansions(self->itself, (unsigned int)value);
+        return 0;
+    }
+
+    if (strcmp(name, "max_entity_indirections") == 0) {
+        unsigned long value;
+
+        value = PyLong_AsUnsignedLong(v);
+        if ((value == (unsigned long)-1) && PyErr_Occurred()) {
+            return -1;
+        }
+        if (value > UINT_MAX) {
+            PyErr_Format(PyExc_ValueError,
+                         "max_entity_indirections must not be greater than %i",
+                         UINT_MAX);
+            return -1;
+        }
+        XML_SetMaxEntityIndirections(self->itself, (unsigned int)value);
+        return 0;
+    }
+
+    if (strcmp(name, "reset_dtd") == 0) {
+        int value;
+
+        if ((value = PyObject_IsTrue(v)) == -1) {
+            return -1;
+        }
+        XML_SetResetDTDFlag(self->itself, value ? XML_TRUE : XML_FALSE);
+        return 0;
+    }
+#endif
 
     if (strcmp(name, "CharacterDataHandler") == 0) {
         /* If we're changing the character data handler, flush all
@@ -1934,6 +2001,17 @@ MODULE_INITFUNC(void)
     MYCONST(XML_PARAM_ENTITY_PARSING_NEVER);
     MYCONST(XML_PARAM_ENTITY_PARSING_UNLESS_STANDALONE);
     MYCONST(XML_PARAM_ENTITY_PARSING_ALWAYS);
+#ifdef XML_BOMB_PROTECTION
+    MYCONST(XML_DEFAULT_MAX_ENTITY_INDIRECTIONS);
+    MYCONST(XML_DEFAULT_MAX_ENTITY_EXPANSIONS);
+    PyModule_AddObject(m, "XML_BOMB_PROTECTION", Py_True);
+    Py_INCREF(Py_True);
+#else
+    PyModule_AddIntConstant(m, "XML_DEFAULT_MAX_ENTITY_INDIRECTIONS", 0);
+    PyModule_AddIntConstant(m, "XML_DEFAULT_MAX_ENTITY_EXPANSIONS", 0);
+    PyModule_AddObject(m, "XML_BOMB_PROTECTION", Py_False);
+    Py_INCREF(Py_False);
+#endif
 #undef MYCONST
 
 #define MYCONST(c) PyModule_AddIntConstant(model_module, #c, c)
@@ -1974,6 +2052,15 @@ MODULE_INITFUNC(void)
     capi.SetProcessingInstructionHandler = XML_SetProcessingInstructionHandler;
     capi.SetUnknownEncodingHandler = XML_SetUnknownEncodingHandler;
     capi.SetUserData = XML_SetUserData;
+#ifdef XML_BOMB_PROTECTION
+    capi.GetMaxEntityIndirections = XML_GetMaxEntityIndirections;
+    capi.SetMaxEntityIndirections = XML_SetMaxEntityIndirections;
+    capi.GetEntityExpansions = XML_GetEntityExpansions;
+    capi.GetMaxEntityExpansions = XML_GetMaxEntityExpansions;
+    capi.SetMaxEntityExpansions = XML_SetMaxEntityExpansions;
+    capi.GetResetDTDFlag = XML_GetResetDTDFlag;
+    capi.SetResetDTDFlag = XML_SetResetDTDFlag;
+#endif
 
     /* export using capsule */
     capi_object = PyCapsule_New(&capi, PyExpat_CAPSULE_NAME, NULL);
