@@ -5,7 +5,7 @@
 # See http://www.python.org/psf/license for licensing details.
 """Defused pyexpat and _elementtree helper
 """
-__all__ = ("monkey_patch",)
+__all__ = ("monkey_patch", "unmonkey_patch")
 
 import sys
 import os
@@ -42,26 +42,31 @@ def _load_module(modname):
 pyexpat = _load_module("pyexpat")
 _elementtree = _load_module("_elementtree")
 
-_ExpatParser_orig__init__ = None
+from xml.sax import expatreader as _expatreader
+from xml.dom import xmlbuilder as _xmlbuilder
+
+_OrigExpatParser = _expatreader.ExpatParser
+_OrigOptions = _xmlbuilder.Options
 
 
-def _ExpatParser_patched__init__(self, *args, **kwargs):
-    _orig__init__(self, *args, **kwargs)
-    self._external_ges = 0
+class _PatchedExpatParser(_OrigExpatParser):
+    def __init__(self, *args, **kwargs):
+        _OrigExpatParser.__init__(self, *args, **kwargs)
+        self._external_ges = 0
+
+
+class _PatchedOptions(_OrigOptions):
+    external_dtd_subset = False
+    external_general_entities = False
+    external_parameter_entities = False
 
 
 def monkey_patch():
-    global _ExpatParser_orig__init__
+    _expatreader.ExpatParser = _PatchedExpatParser
+    _xmlbuilder.Options = _PatchedOptions
 
-    from xml.sax.expatreader import ExpatParser
-    from xml.dom.xmlbuilder import Options
-
-    if _ExpatParser_orig__init__ is None:
-        _ExpatParser_orig__init__ = ExpatParser.__init__
-
-    ExpatParser.__int__ = _ExpatParser_patched__init__
-    Options.external_dtd_subset = False
-    Options.external_general_entities = False
-    Options.external_parameter_entities = False
+def unmonkey_patch():
+    _expatreader.ExpatParser = _OrigExpatParser
+    _xmlbuilder.Options = _OrigOptions
 
 monkey_patch()
