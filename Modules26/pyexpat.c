@@ -1355,8 +1355,11 @@ newxmlparseobject(char *encoding, char *namespace_separator, PyObject *intern)
     else {
         self->itself = XML_ParserCreate(encoding);
     }
+#if PY_VERSION_HEX >= 0x02060800
+    /* 2.6.6 is the latest Windows binary release */
     XML_SetHashSalt(self->itself,
                     (unsigned long)_Py_HashSecret.prefix);
+#endif
     self->intern = intern;
     Py_XINCREF(self->intern);
 #ifdef Py_TPFLAGS_HAVE_GC
