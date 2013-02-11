@@ -66,6 +66,9 @@ exts = []
 expat_inc = [os.path.join(os.getcwd(), 'expat')]
 define_macros = [
     ('HAVE_EXPAT_CONFIG_H', '1'),
+    #('XML_DEFAULT_MAX_ENTITY_INDIRECTIONS', '40'),
+    #('XML_DEFAULT_MAX_ENTITY_EXPANSIONS', str(8*1024*1024)),
+    #('XML_DTD_RESET_FLAG_DEFAULT', '0'),
 ]
 expat_lib = []
 expat_sources = ['expat/xmlparse.c',
@@ -85,12 +88,12 @@ expat_depends = ['expat/ascii.h',
                  ]
 
 exts.append(Extension('pyexpat',
-                  define_macros=define_macros,
-                  include_dirs=expat_inc,
-                  libraries=expat_lib,
-                  sources=[os.path.join(moddir, 'pyexpat.c')] + expat_sources,
-                  depends=expat_depends,
-                  ))
+                      define_macros=define_macros,
+                      include_dirs=expat_inc,
+                      libraries=expat_lib,
+                      sources=[os.path.join(moddir, 'pyexpat.c')] + expat_sources,
+                      depends=expat_depends,
+                      ))
 
 
 define_macros.append(('USE_PYEXPAT_CAPI', None))
@@ -125,7 +128,7 @@ setup(
     keywords="xml expat",
     platforms="POSIX, Windows",
     license="PSFL",
-    description="defused expat parser",
+    description="XML bomb protection with modified expat parser",
     long_description="\n".join(long_description),
     classifiers=[
         "Development Status :: 4 - Beta",
