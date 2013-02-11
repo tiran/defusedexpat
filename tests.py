@@ -2,6 +2,7 @@ from __future__ import print_function
 import os
 import sys
 import unittest
+import re
 
 import defusedexpat
 import pyexpat
@@ -13,6 +14,11 @@ from xml.parsers.expat import errors
 from xml.etree import cElementTree as ET
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+PY26 = sys.version_info[:2] == (2, 6)
+
+
+# Python 2.6
+ParseError = getattr(ET, "ParseError", SyntaxError)
 
 # prevent web access
 # based on Debian's rules, Port 9 is discard
@@ -30,6 +36,42 @@ quadratic_bomb = b"""\
 <bomb>&a;</bomb>
 """
 
+if PY26:
+    class _AssertRaisesContext(object):
+        """A context manager used to implement TestCase.assertRaises* methods."""
+
+        def __init__(self, expected, test_case, expected_regexp=None):
+            self.expected = expected
+            self.failureException = test_case.failureException
+            self.expected_regexp = expected_regexp
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc_value, tb):
+            if exc_type is None:
+                try:
+                    exc_name = self.expected.__name__
+                except AttributeError:
+                    exc_name = str(self.expected)
+                raise self.failureException(
+                    "{0} not raised".format(exc_name))
+            if not issubclass(exc_type, self.expected):
+                # let unexpected exceptions pass through
+                return False
+            self.exception = exc_value # store for later retrieval
+            if self.expected_regexp is None:
+                return True
+
+            expected_regexp = self.expected_regexp
+            if isinstance(expected_regexp, basestring):
+                expected_regexp = re.compile(expected_regexp)
+            if not expected_regexp.search(str(exc_value)):
+                raise self.failureException('"%s" does not match "%s"' %
+                         (expected_regexp.pattern, str(exc_value)))
+            return True
+
+
 class DefusedExpatTests(unittest.TestCase):
     dtd_external_ref = False
 
@@ -37,6 +79,15 @@ class DefusedExpatTests(unittest.TestCase):
     xml_external = os.path.join(HERE, "xmltestdata", "external.xml")
     xml_quadratic = os.path.join(HERE, "xmltestdata", "quadratic.xml")
     xml_bomb = os.path.join(HERE, "xmltestdata", "xmlbomb.xml")
+
+    if PY26:
+        def assertRaises(self, excClass, callableObj=None, *args, **kwargs):
+            context = _AssertRaisesContext(excClass, self)
+            if callableObj is None:
+                return context
+            with context:
+                callableObj(*args, **kwargs)
+
 
     def test_xmlbomb_protection_available(self):
         self.assertTrue(pyexpat.XML_BOMB_PROTECTION)
@@ -118,13 +169,13 @@ class DefusedExpatTests(unittest.TestCase):
         self.assertEqual(str(e.exception), "undefined entity: line 7, column 6")
 
     def test_etree(self):
-        with self.assertRaises(ET.ParseError) as e:
+        with self.assertRaises(ParseError) as e:
             ET.parse(self.xml_bomb)
         self.assertEqual(str(e.exception),
                          "entity indirection limit exceeded: line 7, column 6")
 
         eight_mb = 1024 ** 2 * 8
-        with self.assertRaises(ET.ParseError) as e:
+        with self.assertRaises(ParseError) as e:
             xml = quadratic_bomb.replace(b"MARK", b"a" * (eight_mb + 1))
             ET.fromstring(xml)
 
