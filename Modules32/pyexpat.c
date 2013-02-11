@@ -1324,7 +1324,7 @@ xmlparse_getattro(xmlparseobject *self, PyObject *nameobj)
             return PyLong_FromLong((long) self->buffer_used);
     }
 #ifdef XML_BOMB_PROTECTION
-    if (first_char == 'm') {
+    if (name[0] == 'm') {
         if (PyUnicode_CompareWithASCIIString(nameobj, "max_entity_indirections") == 0)
             return PyLong_FromLong((long)
                                     XML_GetMaxEntityIndirections(self->itself));
