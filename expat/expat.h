@@ -994,7 +994,7 @@ XML_GetInputContext(XML_Parser parser,
 #ifdef XML_BOMB_PROTECTION
 
 /* Limit the amount of indirections that are allowed to occur during the
-   expansion of a nested entity. The counter starts when an entity reference
+   expansion of a nested entity. A counter starts when an entity reference
    is encountered. It resets after the entity is fully expanded. The limit
    protects the parser against exponential entity expansion attacks (aka
    billion laughs attack). When the limit is exceeded the parser stops and
@@ -1010,7 +1010,7 @@ void XML_SetMaxEntityIndirections(XML_Parser parser, unsigned int value);
 
 
 /* Limit the total length of all entity expansions throughout the entire
-   document. The lengths of all entity are accumulated in a parser variable.
+   document. The lengths of all entities are accumulated in a parser variable.
    The setting protects against quadratic blowup attacks (lots of expansions
    of a large entity declaration). When the sum of all entities exceeds
    the limit, the parser stops and fails with `XML_ERROR_ENTITY_EXPANSION`.
