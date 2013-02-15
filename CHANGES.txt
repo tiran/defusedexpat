@@ -1,6 +1,12 @@
 Changelog
 =========
 
+defusedexpat 0.3
+----------------
+
+*Release date: ??-Feb-2013*
+
+
 defusedexpat 0.2
 ----------------
 

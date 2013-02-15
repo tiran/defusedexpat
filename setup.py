@@ -128,7 +128,7 @@ with open("CHANGES.txt") as f:
 
 setup(
     name="defusedexpat",
-    version="0.2",
+    version="0.3dev",
     ext_modules=exts,
     py_modules=["defusedexpat"],
     cmdclass={"test": TestCommand},
