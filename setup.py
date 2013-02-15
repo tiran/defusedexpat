@@ -96,7 +96,8 @@ expat_depends = ['expat/ascii.h',
                  'expat/utf8tab.h',
                  'expat/xmlrole.h',
                  'expat/xmltok.h',
-                 'expat/xmltok_impl.h'
+                 'expat/xmltok_impl.h',
+                 os.path.join(moddir, 'pyexpat.h')
                  ]
 
 exts.append(Extension('pyexpat',
