@@ -4,9 +4,10 @@ Changelog
 defusedexpat 0.2
 ----------------
 
-*Release date: ??-Feb-2013*
+*Release date: 15-Feb-2013*
 
 - Python 3.1 support
+- Misc fixes and improvements
 
 
 defusedexpat 0.1
