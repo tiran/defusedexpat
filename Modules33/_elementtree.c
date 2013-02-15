@@ -3198,6 +3198,8 @@ xmlparser_init(PyObject *self, PyObject *args, PyObject *kwds)
     PyObject *target = NULL, *html = NULL;
     char *encoding = NULL;
     int ignore_dtd_flag = 0;
+
+#ifdef XML_BOMB_PROTECTION
     PyObject *ignore_dtd = NULL, *indirections = NULL, *expansions = NULL;
     unsigned long max_indirections;
     unsigned long max_expansions;
@@ -3212,13 +3214,19 @@ xmlparser_init(PyObject *self, PyObject *args, PyObject *kwds)
                                      &ignore_dtd)) {
         return -1;
     }
-
-    if (indirections == NULL || indirections == Py_None) {
-#ifdef XML_BOMB_PROTECTION
-        max_indirections = XML_DEFAULT_MAX_ENTITY_INDIRECTIONS;
 #else
-        max_indirections = 0;
+    static char *kwlist[] = {"html", "target", "encoding", NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOz:XMLParser", kwlist,
+                                     &html, &target, &encoding)) {
+        return -1;
+    }
+
 #endif
+
+#ifdef XML_BOMB_PROTECTION
+    if (indirections == NULL || indirections == Py_None) {
+        max_indirections = XML_DEFAULT_MAX_ENTITY_INDIRECTIONS;
     }
     else {
         max_indirections = PyLong_AsUnsignedLong(indirections);
@@ -3234,11 +3242,7 @@ xmlparser_init(PyObject *self, PyObject *args, PyObject *kwds)
     }
 
     if (expansions == NULL || expansions == Py_None) {
-#ifdef XML_BOMB_PROTECTION
         max_expansions = XML_DEFAULT_MAX_ENTITY_EXPANSIONS;
-#else
-        max_expansions = 0;
-#endif
     }
     else {
         max_expansions = PyLong_AsUnsignedLong(expansions);
@@ -3259,6 +3263,7 @@ xmlparser_init(PyObject *self, PyObject *args, PyObject *kwds)
     else if ((ignore_dtd_flag = PyObject_IsTrue(ignore_dtd)) == -1) {
         return -1;
     }
+#endif
 
     self_xp->entity = PyDict_New();
     if (!self_xp->entity)

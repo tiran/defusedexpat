@@ -2181,6 +2181,8 @@ xmlparser(PyObject* self_, PyObject* args, PyObject* kw)
 
     PyObject* target = NULL;
     char* encoding = NULL;
+
+#ifdef XML_BOMB_PROTECTION
     int ignore_dtd_flag = 0;
     PyObject *ignore_dtd = NULL, *indirections = NULL, *expansions = NULL;
     unsigned long max_indirections;
@@ -2196,13 +2198,19 @@ xmlparser(PyObject* self_, PyObject* args, PyObject* kw)
                                      &ignore_dtd)) {
         return NULL;
     }
-
-    if (indirections == NULL || indirections == Py_None) {
-#ifdef XML_BOMB_PROTECTION
-        max_indirections = XML_DEFAULT_MAX_ENTITY_INDIRECTIONS;
 #else
-        max_indirections = 0;
+    static char *kwlist[] = {"target", "encoding", NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(args, kw, "|Oz:XMLParser", kwlist,
+                                     &target, &encoding)) {
+        return NULL;
+    }
+
 #endif
+
+#ifdef XML_BOMB_PROTECTION
+    if (indirections == NULL || indirections == Py_None) {
+        max_indirections = XML_DEFAULT_MAX_ENTITY_INDIRECTIONS;
     }
     else {
         max_indirections = PyLong_AsUnsignedLong(indirections);
@@ -2218,11 +2226,7 @@ xmlparser(PyObject* self_, PyObject* args, PyObject* kw)
     }
 
     if (expansions == NULL || expansions == Py_None) {
-#ifdef XML_BOMB_PROTECTION
         max_expansions = XML_DEFAULT_MAX_ENTITY_EXPANSIONS;
-#else
-        max_expansions = 0;
-#endif
     }
     else {
         max_expansions = PyLong_AsUnsignedLong(expansions);
@@ -2243,6 +2247,7 @@ xmlparser(PyObject* self_, PyObject* args, PyObject* kw)
     else if ((ignore_dtd_flag = PyObject_IsTrue(ignore_dtd)) == -1) {
              return NULL;
     }
+#endif
 
 
 #if defined(USE_PYEXPAT_CAPI)
