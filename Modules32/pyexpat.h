@@ -4,7 +4,7 @@
 /* note: you must import expat.h before importing this module! */
 
 #ifdef XML_BOMB_PROTECTION
-#define PyExpat_CAPI_MAGIC  "pyexpat.expat_CAPI 1.1 bomb protection"
+#define PyExpat_CAPI_MAGIC  "pyexpat.expat_CAPI 1.1"
 #else
 #define PyExpat_CAPI_MAGIC  "pyexpat.expat_CAPI 1.0"
 #endif
