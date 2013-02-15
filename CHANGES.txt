@@ -6,6 +6,8 @@ defusedexpat 0.3
 
 *Release date: ??-Feb-2013*
 
+- Proxy trick doesn't work on Windows
+
 
 defusedexpat 0.2
 ----------------

@@ -232,8 +232,9 @@ class DefusedExpatTests(unittest.TestCase):
     def test_sax_external_entity(self):
         try:
             defusedexpat.unmonkey_patch()
-            # IOError caused by proxy settings
-            self.assertRaises(IOError, self.parse_sax, self.xml_external)
+            # IOError caused by proxy settings, works only on POSIX
+            if os.name == "posix":
+                self.assertRaises(IOError, self.parse_sax, self.xml_external)
         finally:
             defusedexpat.monkey_patch()
         value = self.parse_sax(self.xml_external)
@@ -244,10 +245,12 @@ class DefusedExpatTests(unittest.TestCase):
             defusedexpat.unmonkey_patch()
             # pulldom does DTD retrieval
             dom = pulldom.parse(self.xml_dtd)
-            self.assertRaises(IOError, list, dom)
+            if os.name == "posix":
+                self.assertRaises(IOError, list, dom)
             # and loads external entities by default
             dom = pulldom.parse(self.xml_external)
-            self.assertRaises(IOError, list, dom)
+            if os.name == "posix":
+                self.assertRaises(IOError, list, dom)
         finally:
             defusedexpat.monkey_patch()
 
