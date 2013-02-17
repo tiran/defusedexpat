@@ -60,6 +60,7 @@ class _PatchedExpatParser(_OrigExpatParser):
 
 
 class _PatchedOptions(_OrigOptions):
+    # These settings are never checked by any code path in xml.dom.
     external_dtd_subset = False
     external_general_entities = False
     external_parameter_entities = False
