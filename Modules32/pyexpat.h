@@ -50,15 +50,12 @@ struct PyExpat_CAPI
 
 #ifdef XML_BOMB_PROTECTION
     /* CAPI 1.1 bomb protection additions */
-    unsigned int (*GetMaxEntityIndirections)(XML_Parser parser);
-    void (*SetMaxEntityIndirections)(XML_Parser parser, unsigned int value);
-
-    unsigned int (*GetEntityExpansions)(XML_Parser parser);
-    unsigned int (*GetMaxEntityExpansions)(XML_Parser parser);
-    void (*SetMaxEntityExpansions)(XML_Parser parser, unsigned int value);
-
-    XML_Bool (*GetResetDTDFlag)(XML_Parser parser);
-    void (*SetResetDTDFlag)(XML_Parser parser, XML_Bool value);
+    int (*GetFeature)(XML_Parser parser, enum XML_FeatureEnum feature,
+                      long *value);
+    int (*SetFeature)(XML_Parser parser, enum XML_FeatureEnum feature,
+                      long value);
+    int (*GetFeatureDefault)(enum XML_FeatureEnum feature, long *value);
+    int (*SetFeatureDefault)(enum XML_FeatureEnum feature, long value);
 #endif
 
     /* always add new stuff to the end! */

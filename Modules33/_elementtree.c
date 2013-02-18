@@ -3197,12 +3197,12 @@ xmlparser_init(PyObject *self, PyObject *args, PyObject *kwds)
     XMLParserObject *self_xp = (XMLParserObject *)self;
     PyObject *target = NULL, *html = NULL;
     char *encoding = NULL;
-    int ignore_dtd_flag = 0;
+    long ignore_dtd_flag = 0;
 
 #ifdef XML_BOMB_PROTECTION
     PyObject *ignore_dtd = NULL, *indirections = NULL, *expansions = NULL;
-    unsigned long max_indirections;
-    unsigned long max_expansions;
+    long max_indirections;
+    long max_expansions;
 
     static char *kwlist[] = {"html", "target", "encoding",
                               "max_entity_indirections",
@@ -3226,42 +3226,45 @@ xmlparser_init(PyObject *self, PyObject *args, PyObject *kwds)
 
 #ifdef XML_BOMB_PROTECTION
     if (indirections == NULL || indirections == Py_None) {
-        max_indirections = XML_DEFAULT_MAX_ENTITY_INDIRECTIONS;
+        EXPAT(GetFeatureDefault)(XML_FEATURE_MAX_ENTITY_INDIRECTIONS,
+                                 &max_indirections);
     }
     else {
-        max_indirections = PyLong_AsUnsignedLong(indirections);
-        if ((max_indirections == (unsigned long)-1) && PyErr_Occurred()) {
+        max_indirections = PyLong_AsLong(indirections);
+        if ((max_indirections == -1) && PyErr_Occurred()) {
             return -1;
         }
-        if (max_indirections > UINT_MAX) {
+        if ((max_indirections > UINT_MAX) || (max_indirections < 0)) {
             PyErr_Format(PyExc_ValueError,
-                         "max_entity_indirections must not be greater than %i",
+                         "max_entity_indirections be between 0 and %i",
                          UINT_MAX);
             return -1;
         }
     }
 
     if (expansions == NULL || expansions == Py_None) {
-        max_expansions = XML_DEFAULT_MAX_ENTITY_EXPANSIONS;
+        EXPAT(GetFeatureDefault)(XML_FEATURE_MAX_ENTITY_EXPANSIONS,
+                                 &max_expansions);
     }
     else {
-        max_expansions = PyLong_AsUnsignedLong(expansions);
-        if ((max_expansions == (unsigned long)-1) && PyErr_Occurred()) {
+        max_expansions = PyLong_AsLong(expansions);
+        if ((max_expansions == -1) && PyErr_Occurred()) {
             return -1;
         }
-        if (max_expansions > UINT_MAX) {
+        if ((max_expansions > UINT_MAX) || (max_expansions < 0)) {
             PyErr_Format(PyExc_ValueError,
-                         "max_entity_expansions must not be greater than %i",
+                         "max_entity_expansions be between 0 and %i",
                          UINT_MAX);
             return -1;
         }
     }
 
     if (ignore_dtd == NULL) {
-        ignore_dtd_flag = 0;
+        EXPAT(GetFeatureDefault)(XML_FEATURE_RESET_DTD,
+                                 &ignore_dtd_flag);
     }
     else if ((ignore_dtd_flag = PyObject_IsTrue(ignore_dtd)) == -1) {
-        return -1;
+             return -1;
     }
 #endif
 
@@ -3284,15 +3287,12 @@ xmlparser_init(PyObject *self, PyObject *args, PyObject *kwds)
     }
 
 #ifdef XML_BOMB_PROTECTION
-    EXPAT(SetMaxEntityIndirections)(self_xp->parser, (unsigned int)max_indirections);
-    assert(EXPAT(GetMaxEntityIndirections)(self_xp->parser) ==
-               (unsigned int)max_indirections);
-    EXPAT(SetMaxEntityExpansions)(self_xp->parser,
-                                 (unsigned int)max_expansions);
-    assert(EXPAT(GetMaxEntityExpansions)(self_xp->parser) ==
-           (unsigned int)max_expansions);
-    EXPAT(SetResetDTDFlag)(self_xp->parser,
-                           ignore_dtd_flag ? XML_TRUE : XML_FALSE);
+    EXPAT(SetFeature)(self_xp->parser, XML_FEATURE_MAX_ENTITY_INDIRECTIONS,
+                      max_indirections);
+    EXPAT(SetFeature)(self_xp->parser, XML_FEATURE_MAX_ENTITY_EXPANSIONS,
+                      max_expansions);
+    EXPAT(SetFeature)(self_xp->parser, XML_FEATURE_RESET_DTD,
+                      ignore_dtd_flag);
 #endif
 
     if (target) {
@@ -3669,16 +3669,21 @@ xmlparser_getattro(XMLParserObject* self, PyObject* nameobj)
         }
 #ifdef XML_BOMB_PROTECTION
         else if (PyUnicode_CompareWithASCIIString(nameobj, "ignore_dtd") == 0) {
-             return PyBool_FromLong(EXPAT(GetResetDTDFlag)
-                                    (self->parser));
+            long value = -1;
+            EXPAT(GetFeature)(self->parser, XML_FEATURE_RESET_DTD, &value);
+            return PyBool_FromLong(value);
         }
         else if (PyUnicode_CompareWithASCIIString(nameobj, "max_entity_indirections") == 0) {
-             return PyLong_FromUnsignedLong(EXPAT(GetMaxEntityIndirections)
-                                            (self->parser));
+            long value = -1;
+            EXPAT(GetFeature)(self->parser, XML_FEATURE_MAX_ENTITY_INDIRECTIONS,
+                              &value);
+            return PyLong_FromLong(value);
         }
         else if (PyUnicode_CompareWithASCIIString(nameobj, "max_entity_expansions") == 0) {
-             return PyLong_FromUnsignedLong(EXPAT(GetMaxEntityExpansions)
-                                            (self->parser));
+            long value = -1;
+            EXPAT(GetFeature)(self->parser, XML_FEATURE_MAX_ENTITY_EXPANSIONS,
+                              &value);
+            return PyLong_FromLong(value);
         }
 #endif
         else
