@@ -1073,6 +1073,8 @@ XML_GetFeatureList(void);
    billion laughs attack). When the limit is exceeded the parser stops and
    fails with `XML_ERROR_ENTITY_INDIRECTIONS`.
    A value of 0 disables the protection.
+
+   Supported range: 0 .. UINT_MAX
  */
 
 #ifndef XML_DEFAULT_MAX_ENTITY_INDIRECTIONS
@@ -1087,6 +1089,8 @@ XML_GetFeatureList(void);
    of a large entity declaration). When the sum of all entities exceeds
    the limit, the parser stops and fails with `XML_ERROR_ENTITY_EXPANSION`.
    A value of 0 disables the protection.
+
+   Supported range: 0 .. UINT_MAX
  */
 #ifndef XML_DEFAULT_MAX_ENTITY_EXPANSIONS
 #define XML_DEFAULT_MAX_ENTITY_EXPANSIONS 1 << 23 /* 8 MiB */
@@ -1099,6 +1103,8 @@ XML_GetFeatureList(void);
    endDoctypeDeclHandler has been called. The flag can be set inside the
    endDoctypeDeclHandler. Without DTD information any entity reference in
    the document body leads to a XML_ERROR_UNDEFINED_ENTITY.
+
+   Supported range: 0, 1
  */
 #ifndef XML_DEFAULT_DTD_RESET
 #define XML_DEFAULT_DTD_RESET XML_FALSE
