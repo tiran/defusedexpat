@@ -7,15 +7,19 @@ Release 2.2.0
               XML_BOMB_PROTECTION
               XML_DEFAULT_MAX_ENTITY_INDIRECTIONS
               XML_DEFAULT_MAX_ENTITY_EXPANSIONS
-              XML_DTD_RESET_FLAG_DEFAULT
+              XML_DEFAULT_RESET_DTD
 
             new API functions:
-              unsigned int XML_GetMaxEntityIndirections(parser)
-              XML_SetMaxEntityIndirections(parser, unsigned int value)
-              unsigned int XML_GetEntityExpansions(parser)
-              XML_SetEntityExpansions(parser, unsigned int value)
-              XML_Bool XML_GetResetDTDFlag(parser)
-              XML_SetResetDTDFlag(parser, XML_Bool value)
+              int XML_GetFeature(XML_Parser parser,
+                                 enum XML_FeatureEnum feature,
+                                 long *value);
+              int XML_SetFeature(XML_Parser parser,
+                                 enum XML_FeatureEnum feature,
+                                 long value);
+              int XML_GetFeatureDefault(enum XML_FeatureEnum feature,
+                                        long *value);
+              int XML_SetFeatureDefault(enum XML_FeatureEnum feature,
+                                        long value);
 
             new XML_FeatureEnum members:
               XML_FEATURE_MAX_ENTITY_INDIRECTIONS,
