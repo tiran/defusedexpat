@@ -2210,8 +2210,10 @@ xmlparser(PyObject* self_, PyObject* args, PyObject* kw)
 
 #ifdef XML_BOMB_PROTECTION
     if (indirections == NULL || indirections == Py_None) {
-        EXPAT(GetFeatureDefault)(XML_FEATURE_MAX_ENTITY_INDIRECTIONS,
-                                 &max_indirections);
+        if (!EXPAT(GetFeatureDefault)(XML_FEATURE_MAX_ENTITY_INDIRECTIONS,
+                                      &max_indirections)) {
+            return PyErr_SetFromErrno(PyExc_ValueError);
+        }
     }
     else {
         max_indirections = PyLong_AsLong(indirections);
@@ -2227,8 +2229,10 @@ xmlparser(PyObject* self_, PyObject* args, PyObject* kw)
     }
 
     if (expansions == NULL || expansions == Py_None) {
-        EXPAT(GetFeatureDefault)(XML_FEATURE_MAX_ENTITY_EXPANSIONS,
-                                 &max_expansions);
+        if (!EXPAT(GetFeatureDefault)(XML_FEATURE_MAX_ENTITY_EXPANSIONS,
+                                      &max_expansions)) {
+            return PyErr_SetFromErrno(PyExc_ValueError);
+        }
     }
     else {
         max_expansions = PyLong_AsLong(expansions);
@@ -2244,8 +2248,10 @@ xmlparser(PyObject* self_, PyObject* args, PyObject* kw)
     }
 
     if (ignore_dtd == NULL) {
-        EXPAT(GetFeatureDefault)(XML_FEATURE_RESET_DTD,
-                                 &ignore_dtd_flag);
+        if (!EXPAT(GetFeatureDefault)(XML_FEATURE_RESET_DTD,
+                                      &ignore_dtd_flag)) {
+            return PyErr_SetFromErrno(PyExc_ValueError);
+        }
     }
     else if ((ignore_dtd_flag = PyObject_IsTrue(ignore_dtd)) == -1) {
              return NULL;
@@ -2293,12 +2299,21 @@ xmlparser(PyObject* self_, PyObject* args, PyObject* kw)
     }
 
 #ifdef XML_BOMB_PROTECTION
-    EXPAT(SetFeature)(self->parser, XML_FEATURE_MAX_ENTITY_INDIRECTIONS,
-                      max_indirections);
-    EXPAT(SetFeature)(self->parser, XML_FEATURE_MAX_ENTITY_EXPANSIONS,
-                      max_expansions);
-    EXPAT(SetFeature)(self->parser, XML_FEATURE_RESET_DTD,
-                      ignore_dtd_flag);
+    if (!EXPAT(SetFeature)(self->parser,
+                           XML_FEATURE_MAX_ENTITY_INDIRECTIONS,
+                           max_indirections)) {
+        return PyErr_SetFromErrno(PyExc_ValueError);
+    }
+    if (!EXPAT(SetFeature)(self->parser,
+                           XML_FEATURE_MAX_ENTITY_EXPANSIONS,
+                           max_expansions)) {
+        return PyErr_SetFromErrno(PyExc_ValueError);
+    }
+    if (!EXPAT(SetFeature)(self->parser,
+                           XML_FEATURE_RESET_DTD,
+                           ignore_dtd_flag)) {
+        return PyErr_SetFromErrno(PyExc_ValueError);
+    }
 #endif
 
     /* setup target handlers */

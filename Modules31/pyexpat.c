@@ -1390,15 +1390,20 @@ xmlparse_getattro(xmlparseobject *self, PyObject *nameobj)
     if (name[0] == 'm') {
         if (strcmp(name, "max_entity_indirections") == 0) {
             long value = -1;
-            XML_GetFeature(self->itself, XML_FEATURE_MAX_ENTITY_INDIRECTIONS,
-                           &value);
+            if (!XML_GetFeature(self->itself,
+                                XML_FEATURE_MAX_ENTITY_INDIRECTIONS,
+                                &value)) {
+                return PyErr_SetFromErrno(PyExc_ValueError);
+            }
             return PyLong_FromLong(value);
         }
         if (strcmp(name, "max_entity_expansions") == 0){
             long value = -1;
-            XML_GetFeature(self->itself, XML_FEATURE_MAX_ENTITY_EXPANSIONS,
-                           &value);
-            return PyLong_FromLong(value);
+            if (!XML_GetFeature(self->itself,
+                                XML_FEATURE_MAX_ENTITY_EXPANSIONS,
+                                &value)) {
+                return PyErr_SetFromErrno(PyExc_ValueError);
+            }            return PyLong_FromLong(value);
         }
     }
 #endif
@@ -1421,7 +1426,9 @@ xmlparse_getattro(xmlparseobject *self, PyObject *nameobj)
 #ifdef XML_BOMB_PROTECTION
     if (strcmp(name, "reset_dtd") == 0) {
         long value = -1;
-        XML_GetFeature(self->itself, XML_FEATURE_RESET_DTD, &value);
+        if (!XML_GetFeature(self->itself, XML_FEATURE_RESET_DTD, &value)) {
+            return PyErr_SetFromErrno(PyExc_ValueError);
+        }
         return PyBool_FromLong(value);
     }
 #endif
@@ -1619,8 +1626,12 @@ xmlparse_setattr(xmlparseobject *self, char *name, PyObject *v)
                          UINT_MAX);
             return -1;
         }
-        XML_SetFeature(self->itself, XML_FEATURE_MAX_ENTITY_EXPANSIONS,
-                       value);
+        if (!XML_SetFeature(self->itself,
+                            XML_FEATURE_MAX_ENTITY_EXPANSIONS,
+                            value)) {
+            PyErr_SetFromErrno(PyExc_ValueError);
+            return -1;
+        }
         return 0;
     }
 
@@ -1637,8 +1648,12 @@ xmlparse_setattr(xmlparseobject *self, char *name, PyObject *v)
                          UINT_MAX);
             return -1;
         }
-        XML_SetFeature(self->itself, XML_FEATURE_MAX_ENTITY_INDIRECTIONS,
-                       value);
+        if (!XML_SetFeature(self->itself,
+                            XML_FEATURE_MAX_ENTITY_INDIRECTIONS,
+                            value)) {
+            PyErr_SetFromErrno(PyExc_ValueError);
+            return -1;
+        }
         return 0;
     }
 
@@ -1648,8 +1663,11 @@ xmlparse_setattr(xmlparseobject *self, char *name, PyObject *v)
         if ((value = PyObject_IsTrue(v)) == -1) {
             return -1;
         }
-        XML_SetFeature(self->itself, XML_FEATURE_RESET_DTD,
-                       value ? XML_TRUE : XML_FALSE);
+        if (!XML_SetFeature(self->itself, XML_FEATURE_RESET_DTD,
+                            value ? XML_TRUE : XML_FALSE)) {
+            PyErr_SetFromErrno(PyExc_ValueError);
+            return -1;
+        }
         return 0;
     }
 #endif
