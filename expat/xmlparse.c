@@ -7,6 +7,7 @@
 #include <assert.h>
 #include <limits.h>                     /* UINT_MAX */
 #include <time.h>                       /* time() */
+#include <errno.h>
 
 #define XML_BUILDING_EXPAT 1
 
@@ -128,6 +129,12 @@ typedef struct {
 #define INIT_BUFFER_SIZE 1024
 
 #define EXPAND_SPARE 24
+
+#ifdef XML_BOMB_PROTECTION
+static unsigned int defaultMaxEntityIndirections = XML_DEFAULT_MAX_ENTITY_INDIRECTIONS;
+static unsigned int defaultMaxEntityExpansions = XML_DEFAULT_MAX_ENTITY_EXPANSIONS;
+static XML_Bool defaultResetDTDFlag = XML_DEFAULT_DTD_RESET;
+#endif
 
 typedef struct binding {
   struct prefix *prefix;
@@ -765,10 +772,10 @@ parserCreate(const XML_Char *encodingName,
   bufferLim = NULL;
 #ifdef XML_BOMB_PROTECTION
   entityIndirections = 0;
-  maxEntityIndirections = XML_DEFAULT_MAX_ENTITY_INDIRECTIONS;
+  maxEntityIndirections = defaultMaxEntityIndirections;
   entityExpansions = 0;
-  maxEntityExpansions = XML_DEFAULT_MAX_ENTITY_EXPANSIONS;
-  resetDTDFlag = XML_DTD_RESET_FLAG_DEFAULT;
+  maxEntityExpansions = defaultMaxEntityExpansions;
+  resetDTDFlag = defaultResetDTDFlag;
 #endif
 
   attsSize = INIT_ATTS_SIZE;
@@ -1901,39 +1908,105 @@ XML_GetCurrentColumnNumber(XML_Parser parser)
 }
 
 #ifdef XML_BOMB_PROTECTION
-unsigned int XMLCALL
-XML_GetMaxEntityIndirections(XML_Parser parser) {
-  return maxEntityIndirections;
-}
-void XMLCALL
-XML_SetMaxEntityIndirections(XML_Parser parser, unsigned int value) {
-  maxEntityIndirections = value;
+
+int XMLCALL
+XML_GetFeature(XML_Parser parser, enum XML_FeatureEnum feature, long *value) {
+    switch (feature) {
+    case XML_FEATURE_MAX_ENTITY_INDIRECTIONS:
+        *value = (long)maxEntityIndirections;
+        return 1;
+    case XML_FEATURE_MAX_ENTITY_EXPANSIONS:
+        *value = (long)maxEntityExpansions;
+        return 1;
+    case XML_FEATURE_RESET_DTD:
+        *value = (long)resetDTDFlag;
+        return 1;
+    default:
+        errno = ENOTSUP;
+        return 0;
+    }
 }
 
-unsigned int XMLCALL
-XML_GetEntityExpansions(XML_Parser parser) {
-  return entityExpansions;
+int XMLCALL
+XML_SetFeature(XML_Parser parser, enum XML_FeatureEnum feature, long value) {
+    switch (feature) {
+    case XML_FEATURE_MAX_ENTITY_INDIRECTIONS:
+        if ((value < 0) || (value > UINT_MAX)) {
+            errno = EINVAL;
+            return 0;
+        }
+        maxEntityIndirections = (unsigned int)value;
+        return 1;
+    case XML_FEATURE_MAX_ENTITY_EXPANSIONS:
+        if ((value < 0) || (value > UINT_MAX)) {
+            errno = EINVAL;
+            return 0;
+        }
+        maxEntityExpansions = (unsigned int)value;
+        return 1;
+    case XML_FEATURE_RESET_DTD:
+        if ((value == 0) || (value == 1)) {
+            resetDTDFlag = (XML_Bool)value;
+            return 1;
+        } else {
+            errno = EINVAL;
+            return 0;
+        }
+    default:
+        errno = ENOTSUP;
+        return 0;
+    }
 }
 
-unsigned int XMLCALL
-XML_GetMaxEntityExpansions(XML_Parser parser) {
-  return maxEntityExpansions;
+int XMLCALL
+XML_GetFeatureDefault(enum XML_FeatureEnum feature, long *value) {
+    switch (feature) {
+    case XML_FEATURE_MAX_ENTITY_INDIRECTIONS:
+        *value = (long)defaultMaxEntityIndirections;
+        return 1;
+    case XML_FEATURE_MAX_ENTITY_EXPANSIONS:
+        *value = (long)defaultMaxEntityExpansions;
+        return 1;
+    case XML_FEATURE_RESET_DTD:
+        *value = (long)defaultResetDTDFlag;
+        return 1;
+    default:
+        errno = ENOTSUP;
+        return 0;
+    }
 }
 
-void XMLCALL
-XML_SetMaxEntityExpansions(XML_Parser parser, unsigned int value) {
-  maxEntityExpansions = value;
+int XMLCALL
+XML_SetFeatureDefault(enum XML_FeatureEnum feature, long value) {
+    switch (feature) {
+    case XML_FEATURE_MAX_ENTITY_INDIRECTIONS:
+        if ((value < 0) || (value > UINT_MAX)) {
+            errno = EINVAL;
+            return 0;
+        }
+        defaultMaxEntityIndirections = (unsigned int)value;
+        return 1;
+    case XML_FEATURE_MAX_ENTITY_EXPANSIONS:
+        if ((value < 0) || (value > UINT_MAX)) {
+            errno = EINVAL;
+            return 0;
+        }
+        defaultMaxEntityExpansions = (unsigned int)value;
+        return 1;
+    case XML_FEATURE_RESET_DTD:
+        if ((value == 0) || (value == 1)) {
+            defaultResetDTDFlag = (XML_Bool)value;
+            return 1;
+        } else {
+            errno = EINVAL;
+            return 0;
+        }
+    default:
+        errno = ENOTSUP;
+        return 0;
+    }
 }
 
-XML_Bool XMLCALL
-XML_GetResetDTDFlag(XML_Parser parser) {
-  return resetDTDFlag;
-}
-
-void XMLCALL
-XML_SetResetDTDFlag(XML_Parser parser, XML_Bool value) {
-  resetDTDFlag = value;
-}
 #endif
 
 
@@ -2103,7 +2176,9 @@ XML_GetFeatureList(void)
     {XML_FEATURE_MAX_ENTITY_EXPANSIONS,
      XML_L("XML_FEATURE_MAX_ENTITY_EXPANSIONS"),
      XML_DEFAULT_MAX_ENTITY_EXPANSIONS},
-    {XML_FEATURE_IGNORE_DTD,       XML_L("XML_FEATURE_IGNORE_DTD"), 0},
+    {XML_FEATURE_RESET_DTD,
+     XML_L("XML_FEATURE_RESET_DTD"),
+     XML_DEFAULT_DTD_RESET},
 #endif
     {XML_FEATURE_END,              NULL, 0}
   };
