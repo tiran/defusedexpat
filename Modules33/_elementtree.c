@@ -3691,19 +3691,29 @@ xmlparser_getattro(XMLParserObject* self, PyObject* nameobj)
 #ifdef XML_BOMB_PROTECTION
         else if (PyUnicode_CompareWithASCIIString(nameobj, "ignore_dtd") == 0) {
             long value = -1;
-            EXPAT(GetFeature)(self->parser, XML_FEATURE_RESET_DTD, &value);
+            if (!EXPAT(GetFeature)(self->parser, XML_FEATURE_RESET_DTD,
+                                   &value)) {
+                return PyErr_SetFromErrno(PyExc_ValueError);
+            }
+
             return PyBool_FromLong(value);
         }
         else if (PyUnicode_CompareWithASCIIString(nameobj, "max_entity_indirections") == 0) {
             long value = -1;
-            EXPAT(GetFeature)(self->parser, XML_FEATURE_MAX_ENTITY_INDIRECTIONS,
-                              &value);
+            if (!EXPAT(GetFeature)(self->parser,
+                                   XML_FEATURE_MAX_ENTITY_INDIRECTIONS,
+                                   &value)) {
+                return PyErr_SetFromErrno(PyExc_ValueError);
+            }
             return PyLong_FromLong(value);
         }
         else if (PyUnicode_CompareWithASCIIString(nameobj, "max_entity_expansions") == 0) {
             long value = -1;
-            EXPAT(GetFeature)(self->parser, XML_FEATURE_MAX_ENTITY_EXPANSIONS,
-                              &value);
+            if (!EXPAT(GetFeature)(self->parser,
+                                   XML_FEATURE_MAX_ENTITY_EXPANSIONS,
+                                   &value)) {
+                return PyErr_SetFromErrno(PyExc_ValueError);
+            }
             return PyLong_FromLong(value);
         }
 #endif
