@@ -6,10 +6,11 @@ defusedexpat 0.3
 
 *Release date: ??-Feb-2013*
 
-- Proxy trick doesn't work on Windows
+- Disable some tests on Windows because proxy trick doesn't work
 - Remove 'bomb protection' suffix from CAPI MAGIC
 - Don't support additional kwargs in _elementtree when XML_BOMB_PROTECTION
   is not available.
+- implement better and more flexibel get/set feature API in expat
 
 
 defusedexpat 0.2

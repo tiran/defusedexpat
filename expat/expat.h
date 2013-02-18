@@ -1117,7 +1117,7 @@ XML_GetFeatureList(void);
    Otherwise, 0 shall be returned and errno set to indicate an error. The
    value shall not be modified if a function signals an error.
 
-   ENOTSUP feature is not supported
+   ENOENT feature is not supported
    EINVAL  value is invalid and outside the allowed range
 
    As of now three features are supported:
