@@ -1075,6 +1075,7 @@ XML_GetFeatureList(void);
    A value of 0 disables the protection.
 
    Supported range: 0 .. UINT_MAX
+   Default: 40
  */
 
 #ifndef XML_DEFAULT_MAX_ENTITY_INDIRECTIONS
@@ -1091,6 +1092,7 @@ XML_GetFeatureList(void);
    A value of 0 disables the protection.
 
    Supported range: 0 .. UINT_MAX
+   Default: 8 MB
  */
 #ifndef XML_DEFAULT_MAX_ENTITY_EXPANSIONS
 #define XML_DEFAULT_MAX_ENTITY_EXPANSIONS 1 << 23 /* 8 MiB */
@@ -1105,6 +1107,7 @@ XML_GetFeatureList(void);
    the document body leads to a XML_ERROR_UNDEFINED_ENTITY.
 
    Supported range: 0, 1
+   Default: 0
  */
 #ifndef XML_DEFAULT_DTD_RESET
 #define XML_DEFAULT_DTD_RESET XML_FALSE
