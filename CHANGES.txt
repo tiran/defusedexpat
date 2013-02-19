@@ -10,7 +10,8 @@ defusedexpat 0.3
 - Remove 'bomb protection' suffix from CAPI MAGIC
 - Don't support additional kwargs in _elementtree when XML_BOMB_PROTECTION
   is not available.
-- implement better and more flexibel get/set feature API in expat
+- Implement better and more flexibel get/set feature API in expat
+- Add module functions to set global settings
 
 
 defusedexpat 0.2

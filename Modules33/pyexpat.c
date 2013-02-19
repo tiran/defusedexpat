@@ -1747,12 +1747,125 @@ pyexpat_ErrorString(PyObject *self, PyObject *args)
 
 /* List of methods defined in the module */
 
+#ifdef XML_BOMB_PROTECTION
+PyDoc_STRVAR(pyexpat_set_reset_dtd_doc,
+"set_reset_dtd(n)\n"
+);
+
+static PyObject *
+pyexpat_set_reset_dtd(PyObject *self, PyObject *args)
+{
+    PyObject *pre;
+    long value;
+    if (!PyArg_ParseTuple(args, "O:set_reset_dtd", &pre))
+        return NULL;
+    if ((value = (long)PyObject_IsTrue(pre)) == -1 ) {
+        return NULL;
+    }
+    if (!XML_SetFeatureDefault(XML_FEATURE_RESET_DTD, value)) {
+        return PyErr_SetFromErrno(PyExc_ValueError);
+    }
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+PyDoc_STRVAR(pyexpat_get_reset_dtd_doc,
+"get_reset_dtd(n)\n"
+);
+
+static PyObject *
+pyexpat_get_reset_dtd(PyObject *self, PyObject *args)
+{
+    long value;
+    if (!XML_GetFeatureDefault(XML_FEATURE_RESET_DTD, &value)) {
+        return PyErr_SetFromErrno(PyExc_ValueError);
+    }
+    return PyBool_FromLong(value);
+}
+
+PyDoc_STRVAR(pyexpat_set_max_entity_expansions_doc,
+"set_max_entity_expansions(n)\n"
+);
+
+static PyObject *
+pyexpat_set_max_entity_expansions(PyObject *self, PyObject *args)
+{
+    long value;
+    if (!PyArg_ParseTuple(args, "l:set_max_entity_expansions", &value))
+        return NULL;
+    if (!XML_SetFeatureDefault(XML_FEATURE_MAX_ENTITY_EXPANSIONS, value)) {
+        return PyErr_SetFromErrno(PyExc_ValueError);
+    }
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+PyDoc_STRVAR(pyexpat_get_max_entity_expansions_doc,
+"get_max_entity_expansions(n)\n"
+);
+
+static PyObject *
+pyexpat_get_max_entity_expansions(PyObject *self, PyObject *args)
+{
+    long value;
+    if (!XML_GetFeatureDefault(XML_FEATURE_MAX_ENTITY_EXPANSIONS, &value)) {
+        return PyErr_SetFromErrno(PyExc_ValueError);
+    }
+    return PyLong_FromLong(value);
+}
+
+PyDoc_STRVAR(pyexpat_set_max_entity_indirections_doc,
+"set_max_entity_indirections(n)\n"
+);
+
+static PyObject *
+pyexpat_set_max_entity_indirections(PyObject *self, PyObject *args)
+{
+    long value;
+    if (!PyArg_ParseTuple(args, "l:set_max_entity_indirections", &value))
+        return NULL;
+    if (!XML_SetFeatureDefault(XML_FEATURE_MAX_ENTITY_INDIRECTIONS, value)) {
+        return PyErr_SetFromErrno(PyExc_ValueError);
+    }
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+PyDoc_STRVAR(pyexpat_get_max_entity_indirections_doc,
+"get_max_entity_indirections(n)\n"
+);
+
+static PyObject *
+pyexpat_get_max_entity_indirections(PyObject *self, PyObject *args)
+{
+    long value;
+    if (!XML_GetFeatureDefault(XML_FEATURE_MAX_ENTITY_INDIRECTIONS, &value)) {
+        return PyErr_SetFromErrno(PyExc_ValueError);
+    }
+    return PyLong_FromLong(value);
+}
+#endif
+
+
 static struct PyMethodDef pyexpat_methods[] = {
     {"ParserCreate",    (PyCFunction)pyexpat_ParserCreate,
      METH_VARARGS|METH_KEYWORDS, pyexpat_ParserCreate__doc__},
     {"ErrorString",     (PyCFunction)pyexpat_ErrorString,
      METH_VARARGS,      pyexpat_ErrorString__doc__},
-
+#ifdef XML_BOMB_PROTECTION
+    {"set_reset_dtd",  (PyCFunction)pyexpat_set_reset_dtd, METH_VARARGS,
+      pyexpat_set_reset_dtd_doc},
+    {"get_reset_dtd",  (PyCFunction)pyexpat_get_reset_dtd, METH_NOARGS,
+      pyexpat_get_reset_dtd_doc},
+    {"set_max_entity_expansions", (PyCFunction)pyexpat_set_max_entity_expansions,
+      METH_VARARGS, pyexpat_set_max_entity_expansions_doc},
+    {"get_max_entity_expansions", (PyCFunction)pyexpat_get_max_entity_expansions,
+      METH_NOARGS, pyexpat_get_max_entity_expansions_doc},
+    {"set_max_entity_indirections", (PyCFunction)pyexpat_set_max_entity_indirections,
+      METH_VARARGS, pyexpat_set_max_entity_indirections_doc},
+    {"get_max_entity_indirections", (PyCFunction)pyexpat_get_max_entity_indirections,
+      METH_NOARGS, pyexpat_get_max_entity_indirections_doc},
+#endif
     {NULL,       (PyCFunction)NULL, 0, NULL}            /* sentinel */
 };
 

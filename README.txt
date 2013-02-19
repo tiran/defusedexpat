@@ -55,6 +55,15 @@ Module constants
 * XML_DEFAULT_MAX_ENTITY_EXPANSIONS
 * XML_BOMB_PROTECTION
 
+
+Modules functions
+..................
+
+* get_reset_dtd(), set_reset_dtd(bool)
+* get_max_entity_expansions(), set_max_entity_expansions(int)
+* get_max_entity_indirections(), et_max_entity_indirections(int)
+
+
 New CAPI members
 ................
 

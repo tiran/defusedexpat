@@ -107,9 +107,35 @@ class DefusedExpatTests(unittest.TestCase):
                                                       repr(container))
                 self.fail(self._formatMessage(msg, standardMsg))
 
+    def setUp(self):
+        pyexpat.set_reset_dtd(False)
+        pyexpat.set_max_entity_expansions(
+            pyexpat.XML_DEFAULT_MAX_ENTITY_EXPANSIONS)
+        pyexpat.set_max_entity_indirections(
+            pyexpat.XML_DEFAULT_MAX_ENTITY_INDIRECTIONS)
 
     def test_xmlbomb_protection_available(self):
         self.assertTrue(pyexpat.XML_BOMB_PROTECTION)
+
+    def test_defaults(self):
+        self.assertEqual(pyexpat.get_reset_dtd(), False)
+        self.assertEqual(pyexpat.get_max_entity_expansions(),
+                         pyexpat.XML_DEFAULT_MAX_ENTITY_EXPANSIONS)
+        self.assertEqual(pyexpat.get_max_entity_indirections(),
+                         pyexpat.XML_DEFAULT_MAX_ENTITY_INDIRECTIONS)
+
+        pyexpat.set_reset_dtd(True)
+        pyexpat.set_max_entity_expansions(10)
+        pyexpat.set_max_entity_indirections(10)
+
+        self.assertEqual(pyexpat.get_reset_dtd(), True)
+        self.assertEqual(pyexpat.get_max_entity_expansions(), 10)
+        self.assertEqual(pyexpat.get_max_entity_indirections(), 10)
+
+        p = pyexpat.ParserCreate()
+        self.assertEqual(p.max_entity_indirections, 10)
+        self.assertEqual(p.max_entity_expansions, 10)
+        self.assertEqual(p.reset_dtd, True)
 
     def test_xmlbomb_exponential(self):
         # test that the maximum indirection limitation prevents exponential
