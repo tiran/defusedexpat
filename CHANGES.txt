@@ -4,7 +4,7 @@ Changelog
 defusedexpat 0.3
 ----------------
 
-*Release date: ??-Feb-2013*
+*Release date: 19-Feb-2013*
 
 - Disable some tests on Windows because proxy trick doesn't work
 - Remove 'bomb protection' suffix from CAPI MAGIC
