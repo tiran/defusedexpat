@@ -1,0 +1,12 @@
+include setup.py
+include README.txt CHANGES.txt LICENSE
+include MANIFEST.in
+include setup.py Makefile
+include tests.py
+recursive-include Modules26 *.c *.h
+recursive-include Modules27 *.c *.h
+recursive-include Modules31 *.c *.h
+recursive-include Modules32 *.c *.h
+recursive-include Modules33 *.c *.h
+recursive-include expat *.c *.h Changes COPYING
+recursive-include xmltestdata *.xml

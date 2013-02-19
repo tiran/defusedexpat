@@ -138,6 +138,7 @@ setup(
     maintainer="Christian Heimes",
     maintainer_email="christian@python.org",
     url="https://bitbucket.org/tiran/defusedexpat",
+    download_url="http://pypi.python.org/pypi/defusedexpat",
     keywords="xml expat",
     platforms="POSIX, Windows",
     license="PSFL",
