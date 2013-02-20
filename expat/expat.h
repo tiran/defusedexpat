@@ -1043,6 +1043,7 @@ enum XML_FeatureEnum {
 #ifdef XML_BOMB_PROTECTION
   /* Added in 2.2. */
   ,
+  XML_FEATURE_BOMB_PROTECTION,
   XML_FEATURE_MAX_ENTITY_INDIRECTIONS,
   XML_FEATURE_MAX_ENTITY_EXPANSIONS,
   XML_FEATURE_RESET_DTD
@@ -1113,6 +1114,9 @@ XML_GetFeatureList(void);
 #define XML_DEFAULT_DTD_RESET XML_FALSE
 #endif
 
+#endif /* XML_BOMB_PROTECTION */
+
+
 /* Feature modifiers
 
    On success the functions shall return 1 and modify or retrieve the value.
@@ -1123,7 +1127,7 @@ XML_GetFeatureList(void);
    ENOENT feature is not supported
    EINVAL  value is invalid and outside the allowed range
 
-   As of now three features are supported:
+   As of now three features are supported with XML_BOMB_PROTECTION available:
      - XML_FEATURE_MAX_ENTITY_INDIRECTIONS
      - XML_FEATURE_MAX_ENTITY_EXPANSIONS
      - XML_FEATURE_RESET_DTD
@@ -1142,8 +1146,6 @@ int XML_SetFeature(XML_Parser parser, enum XML_FeatureEnum feature,
  */
 int XML_GetFeatureDefault(enum XML_FeatureEnum feature, long *value);
 int XML_SetFeatureDefault(enum XML_FeatureEnum feature, long value);
-
-#endif /* XML_BOMB_PROTECTION */
 
 
 /* Expat follows the GNU/Linux convention of odd number minor version for

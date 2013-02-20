@@ -1907,107 +1907,113 @@ XML_GetCurrentColumnNumber(XML_Parser parser)
   return position.columnNumber;
 }
 
-#ifdef XML_BOMB_PROTECTION
+
 
 int XMLCALL
 XML_GetFeature(XML_Parser parser, enum XML_FeatureEnum feature, long *value) {
-    switch (feature) {
-    case XML_FEATURE_MAX_ENTITY_INDIRECTIONS:
-        *value = (long)maxEntityIndirections;
-        return 1;
-    case XML_FEATURE_MAX_ENTITY_EXPANSIONS:
-        *value = (long)maxEntityExpansions;
-        return 1;
-    case XML_FEATURE_RESET_DTD:
-        *value = (long)resetDTDFlag;
-        return 1;
-    default:
-        errno = ENOENT;
-        return 0;
-    }
+  switch (feature) {
+#ifdef XML_BOMB_PROTECTION
+  case XML_FEATURE_MAX_ENTITY_INDIRECTIONS:
+    *value = (long)maxEntityIndirections;
+    return 1;
+  case XML_FEATURE_MAX_ENTITY_EXPANSIONS:
+    *value = (long)maxEntityExpansions;
+    return 1;
+  case XML_FEATURE_RESET_DTD:
+    *value = (long)resetDTDFlag;
+    return 1;
+#endif
+  default:
+    errno = ENOENT;
+    return 0;
+  }
 }
 
 int XMLCALL
 XML_SetFeature(XML_Parser parser, enum XML_FeatureEnum feature, long value) {
-    switch (feature) {
-    case XML_FEATURE_MAX_ENTITY_INDIRECTIONS:
-        if ((value < 0) || (value > UINT_MAX)) {
-            errno = EINVAL;
-            return 0;
-        }
-        maxEntityIndirections = (unsigned int)value;
-        return 1;
-    case XML_FEATURE_MAX_ENTITY_EXPANSIONS:
-        if ((value < 0) || (value > UINT_MAX)) {
-            errno = EINVAL;
-            return 0;
-        }
-        maxEntityExpansions = (unsigned int)value;
-        return 1;
-    case XML_FEATURE_RESET_DTD:
-        if ((value == 0) || (value == 1)) {
-            resetDTDFlag = (XML_Bool)value;
-            return 1;
-        } else {
-            errno = EINVAL;
-            return 0;
-        }
-    default:
-        errno = ENOENT;
-        return 0;
+  switch (feature) {
+#ifdef XML_BOMB_PROTECTION
+  case XML_FEATURE_MAX_ENTITY_INDIRECTIONS:
+    if ((value < 0) || (value > UINT_MAX)) {
+      errno = EINVAL;
+      return 0;
     }
+    maxEntityIndirections = (unsigned int)value;
+    return 1;
+  case XML_FEATURE_MAX_ENTITY_EXPANSIONS:
+    if ((value < 0) || (value > UINT_MAX)) {
+      errno = EINVAL;
+      return 0;
+    }
+    maxEntityExpansions = (unsigned int)value;
+    return 1;
+  case XML_FEATURE_RESET_DTD:
+    if ((value == 0) || (value == 1)) {
+      resetDTDFlag = (XML_Bool)value;
+      return 1;
+    } else {
+      errno = EINVAL;
+      return 0;
+    }
+#endif
+  default:
+    errno = ENOENT;
+    return 0;
+  }
 }
 
 int XMLCALL
 XML_GetFeatureDefault(enum XML_FeatureEnum feature, long *value) {
-    switch (feature) {
-    case XML_FEATURE_MAX_ENTITY_INDIRECTIONS:
-        *value = (long)defaultMaxEntityIndirections;
-        return 1;
-    case XML_FEATURE_MAX_ENTITY_EXPANSIONS:
-        *value = (long)defaultMaxEntityExpansions;
-        return 1;
-    case XML_FEATURE_RESET_DTD:
-        *value = (long)defaultResetDTDFlag;
-        return 1;
-    default:
-        errno = ENOENT;
-        return 0;
-    }
+  switch (feature) {
+#ifdef XML_BOMB_PROTECTION
+  case XML_FEATURE_MAX_ENTITY_INDIRECTIONS:
+    *value = (long)defaultMaxEntityIndirections;
+    return 1;
+  case XML_FEATURE_MAX_ENTITY_EXPANSIONS:
+    *value = (long)defaultMaxEntityExpansions;
+    return 1;
+  case XML_FEATURE_RESET_DTD:
+    *value = (long)defaultResetDTDFlag;
+    return 1;
+#endif
+  default:
+    errno = ENOENT;
+    return 0;
+  }
 }
 
 int XMLCALL
 XML_SetFeatureDefault(enum XML_FeatureEnum feature, long value) {
-    switch (feature) {
-    case XML_FEATURE_MAX_ENTITY_INDIRECTIONS:
-        if ((value < 0) || (value > UINT_MAX)) {
-            errno = EINVAL;
-            return 0;
-        }
-        defaultMaxEntityIndirections = (unsigned int)value;
-        return 1;
-    case XML_FEATURE_MAX_ENTITY_EXPANSIONS:
-        if ((value < 0) || (value > UINT_MAX)) {
-            errno = EINVAL;
-            return 0;
-        }
-        defaultMaxEntityExpansions = (unsigned int)value;
-        return 1;
-    case XML_FEATURE_RESET_DTD:
-        if ((value == 0) || (value == 1)) {
-            defaultResetDTDFlag = (XML_Bool)value;
-            return 1;
-        } else {
-            errno = EINVAL;
-            return 0;
-        }
-    default:
-        errno = ENOENT;
-        return 0;
+  switch (feature) {
+#ifdef XML_BOMB_PROTECTION
+  case XML_FEATURE_MAX_ENTITY_INDIRECTIONS:
+    if ((value < 0) || (value > UINT_MAX)) {
+      errno = EINVAL;
+      return 0;
     }
-}
-
+    defaultMaxEntityIndirections = (unsigned int)value;
+    return 1;
+  case XML_FEATURE_MAX_ENTITY_EXPANSIONS:
+    if ((value < 0) || (value > UINT_MAX)) {
+      errno = EINVAL;
+      return 0;
+    }
+    defaultMaxEntityExpansions = (unsigned int)value;
+    return 1;
+  case XML_FEATURE_RESET_DTD:
+    if ((value == 0) || (value == 1)) {
+      defaultResetDTDFlag = (XML_Bool)value;
+      return 1;
+    } else {
+      errno = EINVAL;
+      return 0;
+    }
 #endif
+  default:
+    errno = ENOENT;
+    return 0;
+  }
+}
 
 
 void XMLCALL
@@ -2170,6 +2176,7 @@ XML_GetFeatureList(void)
     {XML_FEATURE_ATTR_INFO,        XML_L("XML_ATTR_INFO"), 0},
 #endif
 #ifdef XML_BOMB_PROTECTION
+    {XML_FEATURE_BOMB_PROTECTION,  XML_L("XML_FEATURE_BOMB_PROTECTION"), 0},
     {XML_FEATURE_MAX_ENTITY_INDIRECTIONS,
      XML_L("XML_FEATURE_MAX_ENTITY_INDIRECTIONS"),
      XML_DEFAULT_MAX_ENTITY_INDIRECTIONS},

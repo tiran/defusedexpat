@@ -3,13 +3,13 @@ Release 2.2.0
             The new features are only available when XML_BOMB_PROTECTION
             is defined.
 
-            new definitions:
+            new definitions (only available with XML_BOMB_PROTECTION):
               XML_BOMB_PROTECTION
               XML_DEFAULT_MAX_ENTITY_INDIRECTIONS
               XML_DEFAULT_MAX_ENTITY_EXPANSIONS
               XML_DEFAULT_RESET_DTD
 
-            new API functions:
+            new API functions (always available):
               int XML_GetFeature(XML_Parser parser,
                                  enum XML_FeatureEnum feature,
                                  long *value);
@@ -22,12 +22,13 @@ Release 2.2.0
                                         long value);
 
             new XML_FeatureEnum members:
-              XML_FEATURE_MAX_ENTITY_INDIRECTIONS,
-              XML_FEATURE_MAX_ENTITY_EXPANSIONS,
+              XML_FEATURE_BOMB_PROTECTION
+              XML_FEATURE_MAX_ENTITY_INDIRECTIONS
+              XML_FEATURE_MAX_ENTITY_EXPANSIONS
               XML_FEATURE_IGNORE_DTD
 
             new XML_Error members:
-              XML_ERROR_ENTITY_INDIRECTIONS,
+              XML_ERROR_ENTITY_INDIRECTIONS
               XML_ERROR_ENTITY_EXPANSION
 
 
