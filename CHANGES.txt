@@ -1,6 +1,13 @@
 Changelog
 =========
 
+defusedexpat 0.4
+----------------
+
+*Release date: ??-???-2013*
+
+- Make code source compatible to Python versions without hash randomization
+
 defusedexpat 0.3
 ----------------
 

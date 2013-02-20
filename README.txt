@@ -163,17 +163,14 @@ XML_FEATURE_RESET_DTD
 Requirements
 ============
 
-* Python 2.6.6 or newer (2.6.8 for randomized hashing)
-* Python 2.7.3 or newer
-* Python 3.1.5 or newer
-* Python 3.2.3 or newer
+* Python 2.6.6 or newer (2.6.8 or newer for randomized hashing)
+* Python 2.7 (2.7.3 or newer for randomized hashing and Windows binaries)
+* Python 3.1 (3.1.5 or newer for randomized hashing and Windows binaries)
+* Python 3.2 (3.2.3 or newer for randomized hashing and Windows binaries)
 * Python 3.3.0 or newer
 
-
-TODO
-====
-
-* Add functions to get and set default parser values
+Windows binaries are compatible to 2.6.6, 2.7.3, 3.1.5, 3.2.3 or 3.3.0 or
+newer micro releases. They don't work on older versions.
 
 
 License

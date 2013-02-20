@@ -1309,8 +1309,10 @@ newxmlparseobject(char *encoding, char *namespace_separator, PyObject *intern)
     /* This feature was added upstream in libexpat 2.1.0.  Our expat copy
      * has a backport of this feature where we also define XML_HAS_SET_HASH_SALT
      * to indicate that we can still use it. */
+#if PY_VERSION_HEX >= 0x02070300
     XML_SetHashSalt(self->itself,
                     (unsigned long)_Py_HashSecret.prefix);
+#endif
 #endif
     self->intern = intern;
     Py_XINCREF(self->intern);
