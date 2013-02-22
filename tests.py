@@ -261,6 +261,7 @@ class DefusedExpatTests(unittest.TestCase):
             # IOError caused by proxy settings, works only on POSIX
             if os.name == "posix":
                 self.assertRaises(IOError, self.parse_sax, self.xml_external)
+                self.assertRaises(IOError, self.parse_sax, self.xml_dtd)
         finally:
             defusedexpat.monkey_patch()
         value = self.parse_sax(self.xml_external)
