@@ -21,13 +21,13 @@ Release 2.2.0
               int XML_SetFeatureDefault(enum XML_FeatureEnum feature,
                                         long value);
 
-            new XML_FeatureEnum members:
+            new XML_FeatureEnum members (always available):
               XML_FEATURE_BOMB_PROTECTION
               XML_FEATURE_MAX_ENTITY_INDIRECTIONS
               XML_FEATURE_MAX_ENTITY_EXPANSIONS
               XML_FEATURE_IGNORE_DTD
 
-            new XML_Error members:
+            new XML_Error members (always available):
               XML_ERROR_ENTITY_INDIRECTIONS
               XML_ERROR_ENTITY_EXPANSION
 
