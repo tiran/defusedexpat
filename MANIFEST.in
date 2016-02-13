@@ -8,5 +8,6 @@ recursive-include Modules27 *.c *.h
 recursive-include Modules31 *.c *.h
 recursive-include Modules32 *.c *.h
 recursive-include Modules33 *.c *.h
+recursive-include Modules34 *.c *.h
 recursive-include expat *.c *.h Changes COPYING
 recursive-include xmltestdata *.xml

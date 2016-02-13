@@ -60,8 +60,11 @@ class TestCommand(Command):
         errno = subprocess.check_call([sys.executable, "tests.py"], env=env)
         raise SystemExit(errno)
 
+if sys.version_info[0:2] >= (3, 4):
+    moddir = "Modules34"
+else:
+    moddir = "Modules%i%i" % sys.version_info[0:2]
 
-moddir = "Modules%i%i" % sys.version_info[0:2]
 exts = []
 expat_inc = [os.path.join(os.getcwd(), 'expat')]
 define_macros = [
