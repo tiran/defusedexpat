@@ -3,7 +3,11 @@
 
 /* note: you must import expat.h before importing this module! */
 
+#ifdef XML_BOMB_PROTECTION
+#define PyExpat_CAPI_MAGIC  "pyexpat.expat_CAPI 1.1"
+#else
 #define PyExpat_CAPI_MAGIC  "pyexpat.expat_CAPI 1.0"
+#endif
 #define PyExpat_CAPSULE_NAME "pyexpat.expat_CAPI"
 
 struct PyExpat_CAPI
@@ -48,6 +52,16 @@ struct PyExpat_CAPI
     enum XML_Status (*SetEncoding)(XML_Parser parser, const XML_Char *encoding);
     int (*DefaultUnknownEncodingHandler)(
         void *encodingHandlerData, const XML_Char *name, XML_Encoding *info);
+#ifdef XML_BOMB_PROTECTION
+    /* CAPI 1.1 bomb protection additions */
+    int (*GetFeature)(XML_Parser parser, enum XML_FeatureEnum feature,
+                      long *value);
+    int (*SetFeature)(XML_Parser parser, enum XML_FeatureEnum feature,
+                      long value);
+    int (*GetFeatureDefault)(enum XML_FeatureEnum feature, long *value);
+    int (*SetFeatureDefault)(enum XML_FeatureEnum feature, long value);
+#endif
+
     /* always add new stuff to the end! */
 };
 
