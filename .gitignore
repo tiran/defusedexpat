@@ -6,6 +6,8 @@ core
 MANIFEST
 README\.html
 
+*.egg-info
+
 .project
 .pydevproject
 .settings

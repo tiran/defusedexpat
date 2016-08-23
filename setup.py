@@ -3,8 +3,9 @@ import sys
 import os
 import subprocess
 from glob import glob
-from distutils.core import setup, Command
-from distutils.extension import Extension
+from distutils.core import Command
+
+from setuptools import setup, Extension
 
 
 class TestCommand(Command):
